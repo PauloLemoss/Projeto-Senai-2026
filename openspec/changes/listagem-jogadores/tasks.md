@@ -47,11 +47,11 @@
 
 ## 5. Testes de integração de ponta a ponta
 
-- [ ] 5.1 Testes via `TestClient` cobrindo cada `#### Scenario` dos três requirements adicionados
+- [x] 5.1 Testes via `TestClient` cobrindo cada `#### Scenario` dos três requirements adicionados
       (listagem paginada, ordenação, validação de parâmetros) contra o Postgres real, com uma
       carga de jogadores variados criada no início de cada teste. Verificar rodando
       `poetry run pytest` com todos os testes passando.
-- [ ] 5.2 Medir a cobertura (`poetry run pytest --cov=mercado_jogadores --cov-report=term-missing`)
+- [x] 5.2 Medir a cobertura (`poetry run pytest --cov=mercado_jogadores --cov-report=term-missing`)
       e revisar linhas não cobertas do código novo desta change, fechando as lacunas que forem
       regra de negócio real (seguindo o mesmo critério usado em `cadastro-jogadores`: não forçar
       teste em código defensivo inalcançável).
