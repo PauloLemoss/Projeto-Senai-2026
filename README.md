@@ -3,8 +3,8 @@
 Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK).
 
 > O frontend ainda não foi implementado (change futura). Este README cobre, por enquanto, só o
-> backend, na parte entregue até aqui (cadastro, consulta, edição, alteração de condição e
-> exclusão lógica de jogadores).
+> backend, na parte entregue até aqui: cadastro, consulta, edição, alteração de condição,
+> exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores.
 
 ## Estrutura
 
@@ -125,11 +125,20 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
   foi corrigido com um `field_serializer` explícito em `JogadorRead`.
 - **Mensagens de erro**: em português, e o texto delas não segue nenhuma convenção fixa (o
   enunciado deixa o texto livre, só exige o campo `message`).
+- **Filtros de `GET /players`**: posição, condição, livre/clube e faixa de idade são aplicados em
+  SQL (com índice); busca por nome e tudo que envolve valor de mercado (filtro e ordenação) são
+  calculados em Python, reaproveitando a mesma função de RN02–RN05 usada na consulta de um
+  jogador — mesmo o barema permitindo reimplementar essa fórmula em SQL sem penalidade, optamos
+  por não ter duas versões da mesma regra (motivo: evitar o tipo de divergência silenciosa do
+  exemplo de ficha de avaliação, onde a multa foi implementada duas vezes e só uma arredondava
+  certo).
+- **Query params em string**: a validação de `GET /players` não reaproveita o `BeforeValidator`
+  usado nos corpos JSON, porque query params chegam sempre como string — os formatos (inteiro
+  sem zeros à esquerda, decimal com até 2 casas) são validados por regex própria.
 
 ## 7. Funcionalidades não implementadas
 
 - Frontend (React) — ainda não iniciado.
-- `GET /players` paginado, com busca, filtros e ordenação (RN07) — fica para uma change própria.
 - Módulos de Clubes, Mercado (compra/venda/histórico) e Liga (escalação/partidas) — ainda não
   implementados.
 

@@ -58,7 +58,7 @@
 
 ## 6. Documentação
 
-- [ ] 6.1 Atualizar o README com o novo endpoint na lista de funcionalidades entregues (seção
+- [x] 6.1 Atualizar o README com o novo endpoint na lista de funcionalidades entregues (seção
       "Funcionalidades não implementadas" deixa de citar RN07). Verificar lendo o README depois
       da edição: a lista de pendências deve refletir só o que ainda falta (clubes, mercado, liga,
       frontend).
