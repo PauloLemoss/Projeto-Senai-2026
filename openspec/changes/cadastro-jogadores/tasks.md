@@ -96,10 +96,10 @@
 
 ## 7. Documentação
 
-- [ ] 7.1 Preencher o `README.md` da raiz com os itens 1 a 3 (pré-requisitos com versão exata:
+- [x] 7.1 Preencher o `README.md` da raiz com os itens 1 a 3 (pré-requisitos com versão exata:
       Python 3.12, Poetry, Docker; criação/recriação do banco via Alembic; passo a passo de
       instalar e rodar o backend) cobrindo só o que esta change entrega. Verificar seguindo os
       comandos do zero numa pasta limpa e confirmando que a API sobe e responde em `/docs`.
-- [ ] 7.2 Criar `.env.example` com as variáveis usadas (`DATABASE_URL`, origem do CORS).
+- [x] 7.2 Criar `.env.example` com as variáveis usadas (`DATABASE_URL`, origem do CORS).
       Verificar que `cp .env.example .env` seguido dos comandos do item 7.1 funciona sem edição
       manual de valores.
