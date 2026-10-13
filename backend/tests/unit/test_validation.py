@@ -1,7 +1,11 @@
 import pytest
 
 from mercado_jogadores.core.errors import NaoEncontradoError
-from mercado_jogadores.core.validation import normalizar_texto, validar_id_da_url
+from mercado_jogadores.core.validation import (
+    normalizar_para_busca,
+    normalizar_texto,
+    validar_id_da_url,
+)
 
 
 class TestNormalizarTexto:
@@ -15,6 +19,19 @@ class TestNormalizarTexto:
     def test_quebra_de_linha_e_recusada(self) -> None:
         with pytest.raises(ValueError):
             normalizar_texto("Meia\nZeta")
+
+
+class TestNormalizarParaBusca:
+    def test_ignora_acentos_e_caixa(self) -> None:
+        assert normalizar_para_busca("João") == normalizar_para_busca("joao")
+
+    def test_encontra_substring_ignorando_acentos(self) -> None:
+        termo = normalizar_para_busca("joao")
+        assert termo in normalizar_para_busca("João Silva")
+
+    def test_encontra_substring_em_maiusculas(self) -> None:
+        termo = normalizar_para_busca("LUA")
+        assert termo in normalizar_para_busca("Meia Lua")
 
 
 class TestValidarIdDaUrl:

@@ -1,6 +1,7 @@
 """Utilitários de validação compartilhados por toda a API (capability `api-conventions`)."""
 
 import re
+import unicodedata
 
 from mercado_jogadores.core.errors import NaoEncontradoError
 
@@ -24,3 +25,12 @@ def validar_id_da_url(valor: str) -> int:
     if not _ID_VALIDO.match(valor) or int(valor) > ID_MAXIMO:
         raise NaoEncontradoError("Identificador inválido.")
     return int(valor)
+
+
+def normalizar_para_busca(texto: str) -> str:
+    """RN07: ignora maiúsculas/minúsculas e acentos, pra comparação de busca ("joao" encontra
+    "João"). Decompõe em NFD e remove as marcas de acento (categoria Unicode Mn)."""
+    sem_acentos = "".join(
+        c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn"
+    )
+    return sem_acentos.lower()
