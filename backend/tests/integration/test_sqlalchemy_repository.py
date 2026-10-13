@@ -1,24 +1,10 @@
-from collections.abc import Generator
 from datetime import UTC, datetime
 from decimal import Decimal
 
-import pytest
 from sqlalchemy.orm import Session
 
-from mercado_jogadores.core.db import SessionLocal
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
-
-
-@pytest.fixture
-def db_session() -> Generator[Session, None, None]:
-    """Sessão real contra o Postgres do docker-compose, revertida ao final do teste."""
-    session = SessionLocal()
-    try:
-        yield session
-    finally:
-        session.rollback()
-        session.close()
 
 
 def _novo_jogador() -> Jogador:
