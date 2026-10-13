@@ -62,13 +62,13 @@
 
 ## 5. Repositório e service (`jogadores`)
 
-- [ ] 5.1 Definir `jogadores/repository.py::JogadorRepository` como `Protocol` (métodos: obter,
+- [x] 5.1 Definir `jogadores/repository.py::JogadorRepository` como `Protocol` (métodos: obter,
       listar_por_id, salvar, excluir_logicamente) e sua implementação SQLAlchemy. Verificar com
       `mypy`/type-checking passando (ou, na ausência de mypy configurado, com um teste de
       integração exercitando a implementação contra o Postgres de teste).
-- [ ] 5.2 Criar um repositório fake (dicionário em memória) em `tests/conftest.py`, implementando
+- [x] 5.2 Criar um repositório fake (dicionário em memória) em `tests/conftest.py`, implementando
       o mesmo `Protocol`. Verificar com um teste simples de ida-e-volta (salvar + obter).
-- [ ] 5.3 Implementar `jogadores/service.py` com as operações: cadastrar, consultar, editar,
+- [x] 5.3 Implementar `jogadores/service.py` com as operações: cadastrar, consultar, editar,
       alterar_condicao, excluir — cada uma recebendo o repositório por injeção (construtor),
       nunca importando SQLAlchemy. Cobrir: RN06 no cadastro, RN08 na edição (posição/idade),
       transição de condição (DOENTE→APTO recusado), RN09 na exclusão. Verificar com testes
