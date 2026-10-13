@@ -105,7 +105,7 @@ class TestListagemPaginadaBuscaEFiltros:
         assert resultado.total_items == total_items
         assert resultado.total_pages == total_pages
 
-    def test_filtro_de_valor_usa_o_valor_de_mercado(self, service: JogadorService) -> None:
+    def test_filtro_min_value_usa_o_valor_de_mercado(self, service: JogadorService) -> None:
         # overall baixo -> valor base pequeno; usamos min_value acima do valor base, mas dentro
         # do valor de mercado ajustado por idade pra confirmar que o filtro usa o calculado.
         cadastrado = service.cadastrar(_dados(idade=20))  # idade <=21 -> +10% no valor de mercado
@@ -114,6 +114,16 @@ class TestListagemPaginadaBuscaEFiltros:
             FiltrosDeListagem(min_value=valor_base + Decimal("0.01"))
         )
         assert len(resultado.itens) == 1
+
+    def test_filtro_max_value_usa_o_valor_de_mercado(self, service: JogadorService) -> None:
+        caro = service.cadastrar(_dados(idade=20))  # +10% no valor de mercado
+        barato = service.cadastrar(_dados(idade=35))  # -10% no valor de mercado
+
+        resultado = service.listar(FiltrosDeListagem(max_value=barato.market_value))
+
+        ids = {item.jogador.id for item in resultado.itens}
+        assert barato.jogador.id in ids
+        assert caro.jogador.id not in ids
 
     def test_faixa_com_um_so_limite_assume_o_extremo(self, service: JogadorService) -> None:
         service.cadastrar(_dados(idade=20))
@@ -135,6 +145,16 @@ class TestOrdenacao:
 
         posicoes = [item.jogador.posicao for item in resultado.itens]
         assert posicoes == ["GOL", "ZAG", "ATA"]
+
+    def test_ordenacao_por_valor_de_mercado(self, service: JogadorService) -> None:
+        caro = service.cadastrar(_dados(nome="Jogador Caro", idade=20))  # +10%
+        barato = service.cadastrar(_dados(nome="Jogador Barato", idade=35))  # -10%
+
+        asc = service.listar(FiltrosDeListagem(sort=["value_asc"]))
+        assert [i.jogador.id for i in asc.itens] == [barato.jogador.id, caro.jogador.id]
+
+        desc = service.listar(FiltrosDeListagem(sort=["value_desc"]))
+        assert [i.jogador.id for i in desc.itens] == [caro.jogador.id, barato.jogador.id]
 
     def test_empate_e_desfeito_por_nome_e_depois_id(self, service: JogadorService) -> None:
         service.cadastrar(_dados(nome="Beta Jogador", idade=25))

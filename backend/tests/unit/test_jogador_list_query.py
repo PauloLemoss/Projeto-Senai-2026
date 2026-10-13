@@ -58,6 +58,11 @@ def test_min_age_acima_de_max_age_e_recusado() -> None:
         JogadorListQuery(min_age="30", max_age="20")
 
 
+def test_min_value_acima_de_max_value_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(min_value="100", max_value="50")
+
+
 def test_free_true_com_club_id_e_recusado() -> None:
     with pytest.raises(ValidationError):
         JogadorListQuery(free="true", club_id="1")
@@ -98,3 +103,52 @@ def test_limit_acima_do_maximo_e_recusado() -> None:
 def test_page_zero_e_recusado() -> None:
     with pytest.raises(ValidationError):
         JogadorListQuery(page="0")
+
+
+def test_sort_com_token_fora_da_lista_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(sort="foo")
+
+
+def test_sort_vazio_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(sort="")
+
+
+def test_sort_explicitamente_nulo_usa_o_padrao() -> None:
+    query = JogadorListQuery(sort=None)
+    assert query.sort == "name"
+
+
+def test_free_passado_como_booleano_direto() -> None:
+    assert JogadorListQuery(free=True).free is True
+    assert JogadorListQuery(free=False).free is False
+
+
+def test_free_explicitamente_nulo_nao_filtra() -> None:
+    assert JogadorListQuery(free=None).free is None
+
+
+def test_inteiro_de_query_vazio_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(club_id="")
+
+
+def test_inteiro_de_query_com_tipo_invalido_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(club_id=1.5)
+
+
+def test_decimal_de_query_vazio_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(min_value="")
+
+
+def test_decimal_de_query_com_tipo_invalido_e_recusado() -> None:
+    with pytest.raises(ValidationError):
+        JogadorListQuery(min_value=True)
+
+
+def test_decimal_de_query_ja_decimal_e_aceito_sem_reprocessar() -> None:
+    query = JogadorListQuery(min_value=Decimal("10.00"))
+    assert query.min_value == Decimal("10.00")
