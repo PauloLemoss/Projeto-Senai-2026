@@ -4,6 +4,8 @@ backend/.venv/
 backend/**/*.egg-info/
 backend/.pytest_cache/
 backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
 backend/.env
 
 # Frontend (Node/React)
