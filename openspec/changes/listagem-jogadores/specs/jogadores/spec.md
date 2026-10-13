@@ -4,12 +4,14 @@
 `GET /players` SHALL devolver um objeto paginado (`data` e `meta`) com os jogadores que atendem à
 busca e aos filtros combinados (RN07). `search` SHALL procurar o texto dentro do nome, ignorando
 maiúsculas, minúsculas e acentos. Os filtros disponíveis — `position`, `condition`, `free`,
-`club_id`, faixa de idade (`min_age`/`max_age`) e faixa de **valor de mercado**
-(`min_value`/`max_value`, nunca o valor base) — SHALL ser combináveis entre si, aplicados antes da
-paginação. `meta.total_items` SHALL contar todos os jogadores que atendem à busca e aos filtros
-(não só os da página atual), e `meta.total_pages` SHALL ser `total_items ÷ limit`, arredondado
-para cima (`0` quando não houver itens). Uma página além da última SHALL responder `200` com
-`data: []` e o `meta` correto, nunca `404`.
+`club_id`, faixa de idade (`min_age`/`max_age`, 16 a 45) e faixa de **valor de mercado**
+(`min_value`/`max_value`, 0 a 550, nunca o valor base) — SHALL ser combináveis entre si, aplicados
+antes da paginação. Quando só um dos limites de uma faixa (`min_age`/`max_age` ou
+`min_value`/`max_value`) for enviado, o outro SHALL assumir o extremo correspondente da faixa
+aceita (ex.: só `min_age` enviado equivale a `max_age=45`). `meta.total_items` SHALL contar todos
+os jogadores que atendem à busca e aos filtros (não só os da página atual), e `meta.total_pages`
+SHALL ser `total_items ÷ limit`, arredondado para cima (`0` quando não houver itens). Uma página
+além da última SHALL responder `200` com `data: []` e o `meta` correto, nunca `404`.
 
 #### Scenario: Busca ignora acentos e caixa
 - **WHEN** o cliente busca `search=joao`
@@ -40,6 +42,10 @@ para cima (`0` quando não houver itens). Uma página além da última SHALL res
 - **THEN** o filtro é aplicado sobre o `market_value` calculado de cada jogador, não sobre o
   `base_value`
 
+#### Scenario: Faixa com um só limite assume o extremo correspondente
+- **WHEN** o cliente envia só `min_age=30`, sem `max_age`
+- **THEN** o filtro é aplicado como se `max_age` fosse `45` (o extremo superior aceito)
+
 ### Requirement: Ordenação da listagem de jogadores
 `sort` SHALL aceitar `name` (padrão), `value_asc`, `value_desc`, `age_asc`, `age_desc` e
 `position`, no máximo dois critérios separados por vírgula, sem repetir o campo; com dois
@@ -58,14 +64,15 @@ LAT, MEI, ATA** (RN07/RN11), não alfabética.
   pelo id crescente
 
 ### Requirement: Validação dos parâmetros de consulta de GET /players
-Os parâmetros de `GET /players` SHALL seguir os formatos de "1. Filtros e query params aceitos":
-inteiros (`club_id`, `page`, `limit`, `min_age`, `max_age`) só positivos, sem zeros à esquerda,
-sem sinal e sem ponto; decimais (`min_value`, `max_value`) na forma `10`, `10.5` ou `10.55`, sem
-sinal, vírgula ou zeros à esquerda; `limit` de 1 a 50 (padrão 10); `page` a partir de 1 (padrão
-1). Um parâmetro com valor fora do aceito, vazio, ou uma combinação contraditória (`min_age` >
-`max_age`, `min_value` > `max_value`, ou `free=true` junto com `club_id`) SHALL ser recusado com
-`400`. `free=false` junto com `club_id` SHALL ser aceito. Um parâmetro com nome fora da tabela
-SHALL ser ignorado.
+Os parâmetros de `GET /players` SHALL seguir os formatos e faixas de "1. Filtros e query params
+aceitos": `search` de 2 a 100 caracteres; inteiros (`club_id`, `page`, `limit`, `min_age`,
+`max_age`) só positivos, sem zeros à esquerda, sem sinal e sem ponto, com `min_age`/`max_age` de
+16 a 45, `limit` de 1 a 50 (padrão 10) e `page` a partir de 1 (padrão 1); decimais (`min_value`,
+`max_value`) na forma `10`, `10.5` ou `10.55`, sem sinal, vírgula ou zeros à esquerda, de 0 a 550.
+Um parâmetro com valor fora do aceito ou da faixa, vazio, ou uma combinação contraditória
+(`min_age` > `max_age`, `min_value` > `max_value`, ou `free=true` junto com `club_id`) SHALL ser
+recusado com `400`. `free=false` junto com `club_id` SHALL ser aceito. Um parâmetro com nome fora
+da tabela SHALL ser ignorado.
 
 #### Scenario: Valor de enum com caixa trocada é recusado
 - **WHEN** o cliente envia `position=mei` (minúsculo)
@@ -90,3 +97,15 @@ SHALL ser ignorado.
 #### Scenario: Parâmetro de nome desconhecido é ignorado
 - **WHEN** o cliente envia um parâmetro que não está na tabela de filtros aceitos
 - **THEN** a API ignora esse parâmetro e processa a requisição normalmente
+
+#### Scenario: Busca fora do tamanho aceito é recusada
+- **WHEN** o cliente envia `search` com 1 caractere (abaixo do mínimo de 2)
+- **THEN** a API responde `400` com `message`
+
+#### Scenario: Limit fora da faixa aceita é recusado
+- **WHEN** o cliente envia `limit=51` (acima do máximo de 50)
+- **THEN** a API responde `400` com `message`
+
+#### Scenario: Valor de filtro acima do limite aceito é recusado
+- **WHEN** o cliente envia `max_value=551` (acima do máximo de 550)
+- **THEN** a API responde `400` com `message`
