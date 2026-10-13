@@ -4,11 +4,11 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from mercado_jogadores.jogadores.models import Jogador
-from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
+from mercado_jogadores.jogadores.repository import FiltrosSql, SQLAlchemyJogadorRepository
 
 
-def _novo_jogador() -> Jogador:
-    return Jogador(
+def _novo_jogador(**sobrescritas: object) -> Jogador:
+    base = dict(
         nome="Teste Integração",
         posicao="ATA",
         agilidade=70,
@@ -23,6 +23,8 @@ def _novo_jogador() -> Jogador:
         fisico=70,
         potencial=75,
     )
+    base.update(sobrescritas)
+    return Jogador(**base)
 
 
 def test_salvar_e_obter_contra_o_postgres_real(db_session: Session) -> None:
@@ -43,3 +45,18 @@ def test_excluir_logicamente_marca_excluido_em_e_some_do_obter(db_session: Sessi
     repo.excluir_logicamente(jogador.id, datetime.now(UTC))
 
     assert repo.obter(jogador.id) is None
+
+
+def test_listar_filtra_por_posicao_e_exclui_jogador_excluido(db_session: Session) -> None:
+    repo = SQLAlchemyJogadorRepository(db_session)
+    ata = repo.salvar(_novo_jogador(posicao="ATA"))
+    mei = repo.salvar(_novo_jogador(posicao="MEI"))
+    excluido = repo.salvar(_novo_jogador(posicao="ATA"))
+    repo.excluir_logicamente(excluido.id, datetime.now(UTC))
+
+    resultado = repo.listar(FiltrosSql(position="ATA"))
+
+    ids = {j.id for j in resultado}
+    assert ata.id in ids
+    assert mei.id not in ids
+    assert excluido.id not in ids
