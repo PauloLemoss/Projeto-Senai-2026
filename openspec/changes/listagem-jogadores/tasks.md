@@ -20,7 +20,7 @@
 
 ## 3. Service: caso de uso de listagem
 
-- [ ] 3.1 Implementar `JogadorService.listar(filtros: FiltrosDeListagem) -> ListaDeJogadores`:
+- [x] 3.1 Implementar `JogadorService.listar(filtros: FiltrosDeListagem) -> ListaDeJogadores`:
       chama `repository.listar()` com os filtros de coluna direta (SQL), depois em Python aplica
       busca por nome (ignorando acentos/caixa, reusando `core/validation.py`), calcula o valor de
       mercado de cada candidato (`calculos.calcular_valor_de_mercado`) pra aplicar
@@ -28,7 +28,7 @@
       desempate final por nome e id) e pagina por último. Verificar com testes unitários
       (repositório fake) cobrindo cada `#### Scenario` do requirement de listagem e do de
       ordenação na spec `jogadores`.
-- [ ] 3.2 Cobrir a tabela de paginação do RN07 (23/10/1, 23/10/3, 23/10/4, 23/50/1, 0/10/1) com
+- [x] 3.2 Cobrir a tabela de paginação do RN07 (23/10/1, 23/10/3, 23/10/4, 23/50/1, 0/10/1) com
       testes parametrizados. Verificar que `total_items` e `total_pages` batem exatamente com a
       tabela do enunciado.
 
