@@ -56,6 +56,27 @@ context: |
   Service layer deve ser testável isoladamente (repositório fake). Pelo menos um teste automatizado
   cobrindo o cálculo do valor de mercado (RN02–RN05) é esperado (diferencial técnico do barema).
 
+  ## Política de deleção (vale para todas as capabilities futuras)
+  Nenhuma FK usa ON DELETE CASCADE — no domínio do enunciado, nenhuma tabela-pai é de fato
+  deletada, então cascade nunca dispararia; todo controle de exclusão fica na aplicação, nunca no
+  banco. Por tabela:
+  - `jogadores`: exclusão lógica (UPDATE em `excluido_em`), nunca DELETE real (RN09).
+  - `clubes`, `contratos`, `transacoes`, `partidas`, `duelos_partida`: nunca deletados. `clubes` e
+    `contratos` mudam só por UPDATE (caixa, status do contrato); `transacoes`, `partidas` e
+    `duelos_partida` são logs imutáveis — nunca são UPDATE nem DELETE depois de criados (RN17,
+    RN20); o repository dessas tabelas não deve nem expor um método de update/delete.
+  - `escalacoes`: única exceção — usa DELETE real. A PK é (`clube_id`, `jogador_id`); sair da
+    escalação (venda, `DOENTE`) ou substituir a escalação inteira (RN19) significa a linha deixar
+    de existir, não um campo de status mudar.
+
+  ## Timestamps por tabela (não é um padrão único/genérico)
+  Seguir exatamente "3. Estrutura de tabelas" do enunciado por tabela, não aplicar
+  `criado_em`/`atualizado_em` de forma uniforme: `jogadores` tem os dois; `clubes`,
+  `transacoes` e `escalacoes` só `criado_em`; `contratos` usa `iniciado_em`/`encerrado_em`
+  (específicos do domínio); `partidas` usa só `jogada_em`; `duelos_partida` não tem nenhum. Um
+  `atualizado_em` numa tabela de log imutável (transações, partidas) sugeriria que a linha pode
+  mudar, o que contradiz RN17/RN20 — não adicionar por "padrão", só onde o enunciado pede.
+
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
 # Example:
