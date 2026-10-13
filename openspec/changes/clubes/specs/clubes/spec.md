@@ -35,6 +35,23 @@ maiúsculas, sem acento). O clube SHALL nascer com `cash` 300,00 e sem jogadores
 - **WHEN** a liga já tem 20 clubes cadastrados e o cliente tenta criar o 21º
 - **THEN** a API responde `409` com `message`, e nada é gravado
 
+#### Scenario: Nome com caractere fora do permitido é recusado
+- **WHEN** o cliente cria um clube com `name` "Clube 10" (contém dígito)
+- **THEN** a API responde `400` com `message`
+
+#### Scenario: Nome com uma palavra só é recusado
+- **WHEN** o cliente cria um clube com `name` "Aguias" (uma palavra só)
+- **THEN** a API responde `400` com `message`
+
+#### Scenario: Nome com mais de cinco palavras é recusado
+- **WHEN** o cliente cria um clube com `name` de seis palavras ou mais
+- **THEN** a API responde `400` com `message`
+
+#### Scenario: Sigla fora do formato básico é recusada
+- **WHEN** o cliente cria um clube com `acronym` de 2 letras, ou em minúsculas, ou com acento
+- **THEN** a API responde `400` com `message`, antes mesmo de verificar a correspondência com o
+  nome
+
 ### Requirement: Sigla precisa corresponder ao nome do clube
 `acronym` SHALL ser formado por três letras que aparecem no `name`, nessa ordem, ignorando
 maiúsculas, minúsculas e acentos, sendo a primeira delas sempre a primeira letra do nome; as três
