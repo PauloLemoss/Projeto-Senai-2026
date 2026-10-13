@@ -48,10 +48,12 @@ além da última SHALL responder `200` com `data: []` e o `meta` correto, nunca 
 
 ### Requirement: Ordenação da listagem de jogadores
 `sort` SHALL aceitar `name` (padrão), `value_asc`, `value_desc`, `age_asc`, `age_desc` e
-`position`, no máximo dois critérios separados por vírgula, sem repetir o campo; com dois
-critérios, o segundo desempata o primeiro, e depois disso o desempate final SHALL ser sempre pelo
-nome e, por último, pelo id crescente. `sort=position` SHALL ordenar na ordem fixa **GOL, ZAG,
-LAT, MEI, ATA** (RN07/RN11), não alfabética.
+`position`, no máximo dois critérios separados por vírgula, sem repetir o mesmo campo mesmo com
+sentidos diferentes (`value_asc,value_desc` ou `age_asc,age_desc` SHALL ser recusado, por
+repetirem o campo `value`/`age`); com dois critérios de campos diferentes, o segundo desempata o
+primeiro, e depois disso o desempate final SHALL ser sempre pelo nome e, por último, pelo id
+crescente. `sort=position` SHALL ordenar na ordem fixa **GOL, ZAG, LAT, MEI, ATA** (RN07/RN11),
+não alfabética.
 
 #### Scenario: Ordenação por posição usa a ordem fixa, não alfabética
 - **WHEN** o cliente pede `sort=position`
@@ -62,6 +64,10 @@ LAT, MEI, ATA** (RN07/RN11), não alfabética.
 - **WHEN** dois ou mais jogadores empatam no critério de `sort` pedido
 - **THEN** o desempate segue pelo nome (ordem alfabética da regra geral) e, se ainda empatado,
   pelo id crescente
+
+#### Scenario: Repetir o mesmo campo com sentidos diferentes é recusado
+- **WHEN** o cliente pede `sort=value_asc,value_desc`
+- **THEN** a API responde `400` com `message`, por repetir o campo `value`
 
 ### Requirement: Validação dos parâmetros de consulta de GET /players
 Os parâmetros de `GET /players` SHALL seguir os formatos e faixas de "1. Filtros e query params
