@@ -34,14 +34,14 @@
 
 ## 4. Query params e resposta HTTP
 
-- [ ] 4.1 Criar `JogadorListQuery` (Pydantic) com todos os parâmetros de `GET /players`
+- [x] 4.1 Criar `JogadorListQuery` (Pydantic) com todos os parâmetros de `GET /players`
       ("1. Filtros e query params aceitos"), incluindo o parser de `sort` (até dois critérios) e
       o `model_validator` das combinações contraditórias (`min_age`/`max_age`,
       `min_value`/`max_value`, `free=true` com `club_id`). Verificar com testes unitários de
       schema cobrindo os cenários de validação do requirement "Validação dos parâmetros" da spec.
-- [ ] 4.2 Criar `PlayerListResponse` (`data: list[JogadorRead]`, `meta: PaginationMeta`) e o
+- [x] 4.2 Criar `PlayerListResponse` (`data: list[JogadorRead]`, `meta: PaginationMeta`) e o
       mapeamento a partir de `ListaDeJogadores`. Verificar com teste unitário do mapeamento.
-- [ ] 4.3 Implementar `GET /players` no router, delegando ao service e devolvendo
+- [x] 4.3 Implementar `GET /players` no router, delegando ao service e devolvendo
       `PlayerListResponse`. Verificar com `GET /docs` listando o novo endpoint com os query
       params documentados.
 
