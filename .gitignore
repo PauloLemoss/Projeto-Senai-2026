@@ -1,8 +1,7 @@
 # Backend (Python)
 backend/.venv/
-backend/__pycache__/
-backend/**/__pycache__/
-backend/*.egg-info/
+**/__pycache__/
+backend/**/*.egg-info/
 backend/.pytest_cache/
 backend/.ruff_cache/
 backend/.env
@@ -11,6 +10,9 @@ backend/.env
 frontend/node_modules/
 frontend/dist/
 frontend/.env
+
+# Env (raiz, usado pelo docker-compose)
+/.env
 
 # Editor/OS
 .vscode/
