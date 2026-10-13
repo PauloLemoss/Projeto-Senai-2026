@@ -1,10 +1,19 @@
-from fastapi import APIRouter, Depends, Response
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from mercado_jogadores.core.db import get_session
 from mercado_jogadores.core.validation import validar_id_da_url
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
-from mercado_jogadores.jogadores.schemas import CondicaoUpdate, JogadorCreate, JogadorRead, JogadorUpdate
+from mercado_jogadores.jogadores.schemas import (
+    CondicaoUpdate,
+    JogadorCreate,
+    JogadorListQuery,
+    JogadorRead,
+    JogadorUpdate,
+    PlayerListResponse,
+)
 from mercado_jogadores.jogadores.service import JogadorService
 
 router = APIRouter(prefix="/players", tags=["jogadores"])
@@ -12,6 +21,15 @@ router = APIRouter(prefix="/players", tags=["jogadores"])
 
 def get_jogador_service(session: Session = Depends(get_session)) -> JogadorService:
     return JogadorService(SQLAlchemyJogadorRepository(session))
+
+
+@router.get("", response_model=PlayerListResponse)
+def listar_jogadores(
+    query: Annotated[JogadorListQuery, Query()],
+    service: JogadorService = Depends(get_jogador_service),
+) -> PlayerListResponse:
+    resultado = service.listar(query.para_filtros_de_listagem())
+    return PlayerListResponse.a_partir_do_resultado(resultado)
 
 
 @router.post("", status_code=201, response_model=JogadorRead)
