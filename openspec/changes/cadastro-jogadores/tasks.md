@@ -17,19 +17,19 @@
 - [x] 2.1 Criar `core/errors.py` com as exceções de domínio (`NaoEncontradoError`,
       `ConflitoError`, `RequisicaoInvalidaError`). Verificar com um teste unitário que cada uma
       carrega a `message`.
-- [ ] 2.2 Registrar exception handlers em `main.py` traduzindo cada exceção para 404/409/400 com
+- [x] 2.2 Registrar exception handlers em `main.py` traduzindo cada exceção para 404/409/400 com
       corpo `{"message": ...}` e `Content-Type: application/json`. Verificar com um teste de
       integração que dispara cada exceção a partir de uma rota de teste e confere o status e o
       corpo.
-- [ ] 2.3 Configurar handler para corpo que não é objeto JSON (array, string, número) responder
+- [x] 2.3 Configurar handler para corpo que não é objeto JSON (array, string, número) responder
       `400` (sobrescrevendo o handler default do FastAPI para `RequestValidationError` quando
       necessário). Verificar com teste de integração enviando `[]`, `"x"` e `10` como corpo de
       `POST /players` e conferindo `400` em todos.
-- [ ] 2.4 Implementar função utilitária de normalização de texto (trim + colapso de espaços,
+- [x] 2.4 Implementar função utilitária de normalização de texto (trim + colapso de espaços,
       rejeição de caracteres de controle) reutilizável por qualquer schema Pydantic de texto livre.
       Verificar com teste unitário cobrindo os cenários da spec `api-conventions`
       (`"  Meia   Zeta "` → `"Meia Zeta"`; caractere de tabulação → erro).
-- [ ] 2.5 Configurar CORS (`CORSMiddleware`) restrito à origem do frontend, lida de variável de
+- [x] 2.5 Configurar CORS (`CORSMiddleware`) restrito à origem do frontend, lida de variável de
       ambiente (nunca `*`). Verificar com teste de integração conferindo o cabeçalho
       `Access-Control-Allow-Origin` na origem configurada.
 
@@ -78,18 +78,18 @@
 
 ## 6. Schemas e router (API HTTP)
 
-- [ ] 6.1 Criar `jogadores/schemas.py` com `JogadorCreate`, `JogadorUpdate`, `CondicaoUpdate` e
+- [x] 6.1 Criar `jogadores/schemas.py` com `JogadorCreate`, `JogadorUpdate`, `CondicaoUpdate` e
       `JogadorRead` (Pydantic v2), aplicando os limites de campo da spec `jogadores` e a
       normalização de texto da tarefa 2.4. Verificar com testes unitários de schema cobrindo os
       limites (nome < 3 chars, atributo fora de 1–99, soma > 480).
-- [ ] 6.2 Implementar `jogadores/router.py` com os 5 endpoints (`POST /players`,
+- [x] 6.2 Implementar `jogadores/router.py` com os 5 endpoints (`POST /players`,
       `GET /players/{id}`, `PUT /players/{id}`, `PATCH /players/{id}/condition`,
       `DELETE /players/{id}`), cada handler só chamando o service e devolvendo o schema de
       resposta. Verificar com `GET /docs` (Swagger) listando os 5 endpoints corretamente.
-- [ ] 6.3 Garantir que `POST /players` responde `201` com header `Location` e que `DELETE
+- [x] 6.3 Garantir que `POST /players` responde `201` com header `Location` e que `DELETE
       /players/{id}` responde `204` sem corpo. Verificar com teste de integração conferindo
       status e headers.
-- [ ] 6.4 Testes de integração de ponta a ponta (via `TestClient`/`httpx`) para cada cenário das
+- [x] 6.4 Testes de integração de ponta a ponta (via `TestClient`/`httpx`) para cada cenário das
       duas specs desta change (`api-conventions` e `jogadores`): pelo menos um teste por
       `#### Scenario` escrito. Verificar rodando `poetry run pytest` e conferindo que todos
       passam.
