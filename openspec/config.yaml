@@ -1,0 +1,76 @@
+schema: spec-driven
+
+context: |
+  ## Projeto
+  Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK): mercado de jogadores de uma
+  liga de futebol fictícia. O enunciado completo, o barema de correção, o glossário e o exemplo
+  de ficha de avaliação estão em /home/charles_silva/estudos/python-fastapi/desafio-isi-dev-1/
+  (README.md, barema.md, glossario.md, ficha-avaliacao-exemplo.md) — leia-os antes de propor
+  requisitos para qualquer change; não invente regra que não esteja lá.
+
+  ## Rastreabilidade (regra mais importante)
+  Toda requirement de uma spec deve citar o identificador da regra de negócio do enunciado
+  (RN01 a RN21) ou do item do barema (B01–B22, F01–F14) que ela cobre. Sempre que o enunciado já
+  trouxer uma tabela de exemplo para a regra, os scenarios devem ser adaptados dessas tabelas
+  (valores e resultados já conferidos pela banca), não inventados do zero.
+
+  ## Stack (só entra em design.md, nunca em specs/)
+  Backend: Python 3.11+, FastAPI, Pydantic, SQLAlchemy, PostgreSQL (via Docker Compose).
+  Frontend: React (Vite).
+  Repositório: monorepo único, pastas backend/ e frontend/ na raiz (exigência do regulamento).
+
+  ## Arquitetura do backend
+  Camadas: Router (FastAPI) → Service → Repository.
+  - Router: só valida entrada (schema Pydantic) e delega ao service; nunca calcula regra de
+    negócio nem acessa o banco diretamente.
+  - Service: dono de toda regra de negócio (RN02–RN21); cada cálculo (valor de mercado, overall,
+    taxa, multa, comissão, placar) existe em um único lugar. Depende de uma abstração de
+    repositório (Protocol/ABC), nunca do SQLAlchemy diretamente (DIP) — isso é o que permite
+    testar a regra de negócio com um repositório fake.
+  - Repository: só acesso a dados (CRUD/queries); não contém regra de negócio.
+  - Operações compostas (compra, venda, partida, escalação, DOENTE que tira titular) rodam numa
+    única transação de banco.
+
+  ## Regras de domínio que toda spec precisa respeitar
+  - Moeda: sempre `Decimal`, nunca `float`. Arredondamento "para longe do zero" (não é o
+    round-half-even padrão do Python), feito uma única vez no resultado final de cada cálculo.
+  - Datas/horas: sempre horário de Brasília, timezone-aware, formato `-03:00` fixo (sem horário
+    de verão).
+  - Sem autenticação/login: o enunciado é explícito nisso (ver Premissas). Não propor requisitos
+    de auth.
+
+  ## Fora de escopo (não propor sem pedido explícito)
+  - Qualquer tecnologia fora da "Stack obrigatória" do enunciado.
+  - Autenticação, autorização, multiusuário.
+  - UI pixel-perfect ao mockup do Figma (o mockup é referência de fluxo, não exige fidelidade
+    visual).
+
+  ## Idioma
+  Specs, proposals, design e tasks em português (pt-BR). Nomes de campo/endpoint ficam em
+  snake_case, exatamente como no enunciado (ex.: `market_value`, `club_id`).
+
+  ## Testes
+  Service layer deve ser testável isoladamente (repositório fake). Pelo menos um teste automatizado
+  cobrindo o cálculo do valor de mercado (RN02–RN05) é esperado (diferencial técnico do barema).
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

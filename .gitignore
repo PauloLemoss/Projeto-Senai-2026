@@ -1,0 +1,21 @@
+# Backend (Python)
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.egg-info/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.env
+
+# Frontend (Node/React)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+
+# OpenSpec (local tool cache, se houver)
+.openspec/cache/
