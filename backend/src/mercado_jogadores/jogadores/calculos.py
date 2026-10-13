@@ -19,6 +19,10 @@ PESOS_POR_POSICAO: dict[str, dict[str, int]] = {
     "ATA": {"pace": 20, "shooting": 40, "passing": 10, "dribbling": 20, "defending": 0, "physical": 10},
 }
 
+# Ordem fixa GOL, ZAG, LAT, MEI, ATA (RN06/RN07/RN11/RN19/RN20) — derivada da ordem de inserção
+# de PESOS_POR_POSICAO, nunca duplicada como uma lista separada.
+ORDEM_DAS_POSICOES: tuple[str, ...] = tuple(PESOS_POR_POSICAO.keys())
+
 DESCONTO_POR_CONDICAO: dict[str, Decimal] = {
     "APTO": Decimal("0"),
     "MAL_CONDICIONADO": Decimal("15"),
