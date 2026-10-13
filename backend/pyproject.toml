@@ -1,0 +1,40 @@
+[project]
+name = "mercado-jogadores-backend"
+version = "0.1.0"
+description = "API REST do estudo de caso SENAI/PE - mercado de jogadores"
+authors = [
+    {name = "charlescadmus",email = "charles.silva@cadmus.com.br"}
+]
+requires-python = "^3.12"
+dependencies = [
+    "fastapi (>=0.143.0,<0.144.0)",
+    "uvicorn[standard] (>=0.54.0,<0.55.0)",
+    "sqlalchemy (>=2.0,<3.0)",
+    "psycopg[binary] (>=3.3.6,<4.0.0)",
+    "pydantic-settings (>=2.15.0,<3.0.0)",
+    "alembic (>=1.20.0,<2.0.0)"
+]
+
+
+[tool.poetry]
+packages = [{include = "mercado_jogadores", from = "src"}]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "ruff (>=0.17.0,<0.18.0)"
+]
