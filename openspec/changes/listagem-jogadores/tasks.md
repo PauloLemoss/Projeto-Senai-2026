@@ -1,10 +1,10 @@
 ## 1. Banco de dados e repositório
 
-- [ ] 1.1 Migration adicionando índices em `jogadores`: `clube_id`, `posicao`, `condicao`, e um
+- [x] 1.1 Migration adicionando índices em `jogadores`: `clube_id`, `posicao`, `condicao`, e um
       índice parcial em `excluido_em` (`WHERE excluido_em IS NULL`). Verificar com
       `alembic upgrade head` aplicando sem erro e `alembic downgrade base && alembic upgrade head`
       recriando do zero.
-- [ ] 1.2 Adicionar `listar(filtros: FiltrosSql) -> list[Jogador]` ao `Protocol
+- [x] 1.2 Adicionar `listar(filtros: FiltrosSql) -> list[Jogador]` ao `Protocol
       JogadorRepository` e às implementações (SQLAlchemy e fake): aplica no SQL só os filtros de
       coluna direta (`position`, `condition`, `free`/`club_id`, faixa de idade) e sempre
       `excluido_em IS NULL`; não inclui busca por nome nem filtro de valor de mercado (ficam no
@@ -14,7 +14,7 @@
 
 ## 2. Cálculos e ordenação
 
-- [ ] 2.1 Expor a ordem fixa de posições (`GOL, ZAG, LAT, MEI, ATA`) a partir de
+- [x] 2.1 Expor a ordem fixa de posições (`GOL, ZAG, LAT, MEI, ATA`) a partir de
       `calculos.PESOS_POR_POSICAO.keys()` (ou constante equivalente), sem duplicar a lista em
       outro arquivo. Verificar com teste unitário conferindo a ordem exata.
 
