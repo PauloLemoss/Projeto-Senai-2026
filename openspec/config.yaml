@@ -15,7 +15,10 @@ context: |
   (valores e resultados já conferidos pela banca), não inventados do zero.
 
   ## Stack (só entra em design.md, nunca em specs/)
-  Backend: Python 3.11+, FastAPI, Pydantic, SQLAlchemy, PostgreSQL (via Docker Compose).
+  Backend: Python 3.12, gerenciado com Poetry (pyproject.toml + poetry.lock versionado).
+  FastAPI ^0.143.0, Pydantic v2, SQLAlchemy 2.x, PostgreSQL (via Docker Compose).
+  Testes: pytest + pytest-asyncio + httpx (TestClient), com testes unitários do service layer
+  usando repositório fake (ver DIP, abaixo) — não dependem do banco para testar regra de negócio.
   Frontend: React (Vite).
   Repositório: monorepo único, pastas backend/ e frontend/ na raiz (exigência do regulamento).
 
