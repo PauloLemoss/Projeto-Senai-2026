@@ -1,8 +1,16 @@
-## 1. Repositório
+## 1. Banco de dados e repositório
 
-- [ ] 1.1 Adicionar `listar_ativos() -> list[Jogador]` ao `Protocol JogadorRepository` e às
-      implementações (SQLAlchemy e fake), buscando todos os jogadores com `excluido_em IS NULL`.
-      Verificar com teste unitário do repositório fake e de integração do repositório real.
+- [ ] 1.1 Migration adicionando índices em `jogadores`: `clube_id`, `posicao`, `condicao`, e um
+      índice parcial em `excluido_em` (`WHERE excluido_em IS NULL`). Verificar com
+      `alembic upgrade head` aplicando sem erro e `alembic downgrade base && alembic upgrade head`
+      recriando do zero.
+- [ ] 1.2 Adicionar `listar(filtros: FiltrosSql) -> list[Jogador]` ao `Protocol
+      JogadorRepository` e às implementações (SQLAlchemy e fake): aplica no SQL só os filtros de
+      coluna direta (`position`, `condition`, `free`/`club_id`, faixa de idade) e sempre
+      `excluido_em IS NULL`; não inclui busca por nome nem filtro de valor de mercado (ficam no
+      service, em Python — ver design.md). Verificar com teste unitário do repositório fake e de
+      integração do repositório real, incluindo um teste que cada filtro de coluna direta
+      realmente restringe o resultado.
 
 ## 2. Cálculos e ordenação
 
@@ -13,12 +21,13 @@
 ## 3. Service: caso de uso de listagem
 
 - [ ] 3.1 Implementar `JogadorService.listar(filtros: FiltrosDeListagem) -> ListaDeJogadores`:
-      busca (ignorando acentos/caixa), filtros combinados (posição, condição, livre/clube, faixa
-      de idade, faixa de valor de mercado — nunca valor base), ordenação (até dois critérios,
-      com `position` na ordem fixa e desempate final por nome e id) e paginação aplicada por
-      último. Reaproveita `calculos.calcular_valor_de_mercado` — nenhuma fórmula nova. Verificar
-      com testes unitários (repositório fake) cobrindo cada `#### Scenario` do requirement de
-      listagem e do de ordenação na spec `jogadores`.
+      chama `repository.listar()` com os filtros de coluna direta (SQL), depois em Python aplica
+      busca por nome (ignorando acentos/caixa, reusando `core/validation.py`), calcula o valor de
+      mercado de cada candidato (`calculos.calcular_valor_de_mercado`) pra aplicar
+      `min_value`/`max_value`, ordena (até dois critérios, com `position` na ordem fixa e
+      desempate final por nome e id) e pagina por último. Verificar com testes unitários
+      (repositório fake) cobrindo cada `#### Scenario` do requirement de listagem e do de
+      ordenação na spec `jogadores`.
 - [ ] 3.2 Cobrir a tabela de paginação do RN07 (23/10/1, 23/10/3, 23/10/4, 23/50/1, 0/10/1) com
       testes parametrizados. Verificar que `total_items` e `total_pages` batem exatamente com a
       tabela do enunciado.

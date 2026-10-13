@@ -28,21 +28,46 @@ arredondando certo e outra não), a decisão abaixo evita esse atalho deliberada
 
 ## Decisions
 
-### Filtrar e ordenar por valor de mercado em Python, não em SQL
+### Filtros diretos em SQL (com índice); valor de mercado e busca por nome em Python
 
-Mesmo o barema permitindo a fórmula duplicada em SQL sem penalidade, a decisão é **não usar esse
-atalho**: o repositório busca todos os jogadores ativos (`excluido_em IS NULL`) com um único
-`SELECT`, e o `service.listar()` aplica busca, filtros, ordenação e paginação inteiramente em
-Python, reaproveitando `calculos.calcular_valor_de_mercado` — a mesma função usada por
-`consultar()`. Isso elimina de vez a possibilidade de `GET /players?min_value=...` filtrar por um
-número e `GET /players/{id}` devolver outro para o mesmo jogador.
+Dividido em dois grupos, por motivo diferente cada um:
 
-**Alternativa considerada e rejeitada**: reimplementar RN02–RN05 como expressão SQL (`CASE WHEN`)
-para filtrar/ordenar no banco. Mais eficiente, mas motivo de rejeição é equivalente ao do exemplo
-de ficha de avaliação (B14): duas implementações da mesma regra divergem silenciosamente, e só a
-automação de teste pega isso tarde. Com o volume de dados deste projeto (dezenas a poucas
-centenas de jogadores), buscar tudo e processar em Python no service é instantâneo e sem risco de
-divergência.
+- **Filtros de coluna direta** (`position`, `condition`, `free`/`club_id`, faixa de idade) **vão
+  para a cláusula `WHERE` do repositório**, com índice (ver "Índices", abaixo). Não há cálculo de
+  regra de negócio aqui — é comparação direta de coluna, sem risco de duplicar fórmula nenhuma, e
+  reduz o conjunto de linhas antes de qualquer processamento em Python.
+- **Busca por nome** (`search`) é feita em Python, sobre o conjunto já filtrado por SQL: reusa a
+  mesma normalização de acentos/caixa de `core/validation.py`, em vez de depender da extensão
+  `unaccent` do Postgres (que exigiria uma migration própria e um índice funcional/trigram só pra
+  isso — desproporcional ao volume de dados deste projeto).
+- **Filtro e ordenação por valor de mercado** (`min_value`/`max_value`, `value_asc`/`value_desc`)
+  continuam em Python, reaproveitando `calculos.calcular_valor_de_mercado` — a mesma função usada
+  por `consultar()`. Mesmo o barema permitindo reimplementar RN02–RN05 em SQL sem penalidade
+  (B2, "Cálculo duplicado"), a decisão é **não usar esse atalho**: criar uma segunda
+  implementação da mesma fórmula (Python e SQL) é exatamente o padrão que gerou o bug da multa
+  (RN15) no exemplo de ficha de avaliação — duas versões da mesma regra, uma arredondando certo e
+  outra não. Como o filtro de coluna direta já reduz bastante o conjunto antes desse ponto,
+  calcular o valor de mercado em Python para o que sobrou é barato.
+
+A ordenação final (incluindo os dois critérios combináveis, com `position` na ordem fixa e
+`value_*` calculado) é sempre feita em Python, depois da busca e dos filtros — assim não existe
+lógica de ordenação partida entre SQL e Python para o mesmo `sort`.
+
+### Índices para os filtros de coluna direta
+
+Nova migration adiciona índices em `jogadores`:
+- `clube_id` — usado pelo filtro `club_id`/`free`, e vai ser reaproveitado pelas consultas de
+  elenco quando a capability `clubes` existir (`GET /clubs/{id}` lista o elenco pelo clube).
+- `posicao` — usado pelo filtro `position` e por `sort=position`.
+- `condicao` — usado pelo filtro `condition`.
+- `excluido_em` — toda consulta de jogador (não só a listagem) filtra `excluido_em IS NULL`; um
+  índice parcial (`WHERE excluido_em IS NULL`) é mais enxuto que um índice completo, já que só
+  precisamos buscar rápido os jogadores ativos.
+
+Não cria índice em `nome` (a busca é feita em Python sobre o conjunto já filtrado, não por `LIKE`
+no banco — um índice B-tree comum não ajudaria em "contém" de qualquer forma, só um índice
+trigram, que é o overhead que a decisão acima evitou) nem em `idade` (faixa pequena de 16 a 45,
+baixa seletividade, não compensa o custo de escrita do índice na escala deste projeto).
 
 ### `sort=position` usa a mesma ordem fixa do `calculos.py`, não uma nova constante
 
@@ -67,10 +92,13 @@ até dois valores separados por vírgula — validados como lista de enum, não 
 
 ## Risks / Trade-offs
 
-- **[Risco] Buscar todos os jogadores ativos a cada listagem** → Mitigação: aceitável na escala
-  deste projeto (ver Non-Goals); se o volume crescesse, o próximo passo seria mover só os filtros
-  "baratos" (posição, condição, livre/clube, idade — colunas diretas, sem cálculo) para o SQL,
-  mantendo busca por valor em Python.
+- **[Risco] Filtro por valor e busca por nome ainda processam em Python o que sobrar depois do
+  SQL** → Mitigação: aceitável na escala deste projeto (ver Non-Goals); os filtros de coluna
+  direta (posição, condição, clube, idade) já reduzem o conjunto antes desse ponto, e o teto de
+  jogadores de uma liga fictícia está longe de justificar `unaccent`/trigram no banco.
 - **[Risco] Pydantic exige parsing de `sort` com até dois valores em uma string separada por
   vírgula** → Mitigação: um `field_validator` dedicado faz o split e valida cada parte contra o
   enum, rejeitando repetição do mesmo campo.
+- **[Risco] Índice parcial em `excluido_em` é sintaxe específica do Postgres** (`CREATE INDEX ...
+  WHERE excluido_em IS NULL`) → Mitigação: sem problema aqui, porque o banco da aplicação é
+  Postgres (decisão já fechada); só importaria se o projeto precisasse suportar múltiplos bancos.
