@@ -1,20 +1,20 @@
 ## 1. Setup do backend
 
-- [ ] 1.1 Inicializar `backend/` com Poetry (`poetry init` ou `pyproject.toml` manual) fixando
+- [x] 1.1 Inicializar `backend/` com Poetry (`poetry init` ou `pyproject.toml` manual) fixando
       Python `^3.12`; adicionar `fastapi^0.143.0`, `uvicorn`, `sqlalchemy^2`, `psycopg[binary]`,
       `pydantic-settings`, `alembic`; em dev: `pytest`, `pytest-asyncio`, `httpx`, `ruff`. Verificar
       com `poetry install` concluindo sem erro e `poetry.lock` sendo gerado.
-- [ ] 1.2 Criar `docker-compose.yml` na raiz do monorepo subindo só o Postgres (serviço `db`), com
+- [x] 1.2 Criar `docker-compose.yml` na raiz do monorepo subindo só o Postgres (serviço `db`), com
       variáveis via `.env`/`.env.example`. Verificar com `docker compose up -d db` seguido de
       `docker compose ps` mostrando o serviço saudável.
-- [ ] 1.3 Configurar Alembic (`alembic init`) apontando para a `DATABASE_URL` do `.env`. Verificar
+- [x] 1.3 Configurar Alembic (`alembic init`) apontando para a `DATABASE_URL` do `.env`. Verificar
       com `alembic current` rodando sem erro contra o banco subido na tarefa 1.2.
-- [ ] 1.4 Criar o esqueleto de pastas de `src/mercado_jogadores/` (`core/`, `jogadores/`) descrito
+- [x] 1.4 Criar o esqueleto de pastas de `src/mercado_jogadores/` (`core/`, `jogadores/`) descrito
       em design.md. Verificar com `poetry run python -c "import mercado_jogadores"` sem erro.
 
 ## 2. Convenções da API (capability `api-conventions`)
 
-- [ ] 2.1 Criar `core/errors.py` com as exceções de domínio (`NaoEncontradoError`,
+- [x] 2.1 Criar `core/errors.py` com as exceções de domínio (`NaoEncontradoError`,
       `ConflitoError`, `RequisicaoInvalidaError`). Verificar com um teste unitário que cada uma
       carrega a `message`.
 - [ ] 2.2 Registrar exception handlers em `main.py` traduzindo cada exceção para 404/409/400 com
@@ -35,28 +35,28 @@
 
 ## 3. Modelo de dados e migration (`jogadores`)
 
-- [ ] 3.1 Criar `jogadores/models.py` com a tabela `jogadores` conforme "3. Estrutura de tabelas"
+- [x] 3.1 Criar `jogadores/models.py` com a tabela `jogadores` conforme "3. Estrutura de tabelas"
       do enunciado (`nome`, `posicao`, `agilidade`, `idade`, `valor_base` DECIMAL, `condicao`,
       `clube_id`, os seis atributos, `potencial`, `excluido_em`, `criado_em`, `atualizado_em`).
       Verificar com `alembic revision --autogenerate` detectando a tabela sem diffs espúrios.
-- [ ] 3.2 Gerar e aplicar a migration inicial. Verificar com `alembic upgrade head` criando a
+- [x] 3.2 Gerar e aplicar a migration inicial. Verificar com `alembic upgrade head` criando a
       tabela no Postgres de desenvolvimento, e `alembic downgrade base && alembic upgrade head`
       recriando do zero sem erro (isso vira o comando de "recriar o banco" do README).
 
 ## 4. Cálculos puros (RN02–RN06)
 
-- [ ] 4.1 Implementar `jogadores/calculos.py::calcular_overall(atributos, posicao) -> int` com a
+- [x] 4.1 Implementar `jogadores/calculos.py::calcular_overall(atributos, posicao) -> int` com a
       tabela de pesos por posição. Verificar com teste unitário cobrindo as 5 linhas da tabela de
       exemplo do RN06 (MEI→73, ATA→76, LAT→72, ZAG→73 com meio-pra-cima, GOL→68).
-- [ ] 4.2 Implementar `calcular_valor_base(overall, potential, idade_cadastro) -> Decimal` (partes
+- [x] 4.2 Implementar `calcular_valor_base(overall, potential, idade_cadastro) -> Decimal` (partes
       progressivas + jovem promessa + piso). Verificar com teste unitário cobrindo as 9 linhas da
       tabela de exemplo do RN06, incluindo o caso de meio-pra-longe-do-zero (3,625 → 3,63) e o
       piso (40/66/36 → 1,00).
-- [ ] 4.3 Implementar `calcular_valor_de_mercado(valor_base, condicao, agilidade, idade) ->
+- [x] 4.3 Implementar `calcular_valor_de_mercado(valor_base, condicao, agilidade, idade) ->
       Decimal` (RN02 a RN05, com teto de −40% e piso de 1,00). Verificar com teste unitário
       cobrindo as 10 linhas da tabela de exemplo do RN05 — **este é o teste exigido pelo
       diferencial técnico B5 do barema**.
-- [ ] 4.4 Confirmar que o arredondamento usa `Decimal` com `ROUND_HALF_UP` (nunca `round()`
+- [x] 4.4 Confirmar que o arredondamento usa `Decimal` com `ROUND_HALF_UP` (nunca `round()`
       nativo nem `float`). Verificar com um teste dedicado ao caso de empate exato (`14,775` →
       `14,78`, para longe do zero).
 
