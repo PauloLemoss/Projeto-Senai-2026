@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mercado_jogadores.jogadores.schemas import JogadorCreate
+from mercado_jogadores.jogadores.schemas import JogadorCreate, JogadorUpdate
 
 _BASE = {
     "name": "Meia Lua",
@@ -95,3 +95,20 @@ def test_float_sem_parte_fracionaria_e_aceito_como_inteiro() -> None:
 def test_booleano_em_campo_inteiro_e_recusado() -> None:
     with pytest.raises(ValidationError):
         JogadorCreate(**{**_BASE, "agility": True})
+
+
+class TestJogadorUpdate:
+    """RN08 / "Limites de cada campo": a edição usa os mesmos limites do cadastro para os
+    quatro campos que ela aceita."""
+
+    def test_edicao_valida_e_aceita(self) -> None:
+        edicao = JogadorUpdate(name="Meia Lua", position="MEI", agility=90, age=25)
+        assert edicao.agility == 90
+
+    def test_agilidade_acima_de_85_com_35_anos_e_recusada(self) -> None:
+        with pytest.raises(ValidationError):
+            JogadorUpdate(name="Meia Lua", position="MEI", agility=90, age=35)
+
+    def test_nome_com_menos_de_duas_palavras_e_recusado(self) -> None:
+        with pytest.raises(ValidationError):
+            JogadorUpdate(name="Lua", position="MEI", agility=85, age=25)
