@@ -16,8 +16,10 @@ from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.clubes.repository import ClubeRepository
 from mercado_jogadores.core.datas import formatar_datetime_rn01
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError
+from mercado_jogadores.core.unidade_de_trabalho import UnidadeDeTrabalho
 from mercado_jogadores.jogadores.repository import FiltrosSql, JogadorRepository
 from mercado_jogadores.jogadores.service import calcular_indicadores
+from mercado_jogadores.liga.repository import EscalacaoRepository
 from mercado_jogadores.mercado.calculos import (
     calcular_comissao_de_venda,
     calcular_credito_na_venda,
@@ -32,7 +34,6 @@ from mercado_jogadores.mercado.repository import (
     FiltrosDeTransacao,
     TransacaoRepository,
 )
-from mercado_jogadores.mercado.unidade_de_trabalho import UnidadeDeTrabalho
 
 LIMITE_DE_ELENCO = 12
 CABECALHO_CSV = (
@@ -96,12 +97,14 @@ class MercadoService:
         clube_repository: ClubeRepository,
         contrato_repository: ContratoRepository,
         transacao_repository: TransacaoRepository,
+        escalacao_repository: EscalacaoRepository,
         unidade_de_trabalho: UnidadeDeTrabalho,
     ) -> None:
         self._jogadores = jogador_repository
         self._clubes = clube_repository
         self._contratos = contrato_repository
         self._transacoes = transacao_repository
+        self._escalacoes = escalacao_repository
         self._uot = unidade_de_trabalho
 
     def comprar(
@@ -187,6 +190,7 @@ class MercadoService:
         clube.caixa += credito
         contrato.situacao = "RESCINDIDO" if multa > Decimal("0.00") else "ENCERRADO"
         contrato.encerrado_em = momento
+        self._escalacoes.remover_titular(jogador_id)  # RN19.5
 
         transacao = Transacao(
             clube_id=clube_id,

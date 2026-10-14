@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from mercado_jogadores.jogadores.service import DadosCadastroJogador, FiltrosDeListagem, JogadorService
-from tests.conftest import FakeJogadorRepository
+from tests.conftest import FakeEscalacaoRepository, FakeJogadorRepository, FakeUnidadeDeTrabalho
 
 
 def _dados(nome: str = "Jogador Teste", **sobrescritas: object) -> DadosCadastroJogador:
@@ -25,8 +25,12 @@ def _dados(nome: str = "Jogador Teste", **sobrescritas: object) -> DadosCadastro
 
 
 @pytest.fixture
-def service(fake_repo: FakeJogadorRepository) -> JogadorService:
-    return JogadorService(fake_repo)
+def service(
+    fake_repo: FakeJogadorRepository,
+    fake_escalacao_repo: FakeEscalacaoRepository,
+    fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
+) -> JogadorService:
+    return JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
 
 
 class TestListagemPaginadaBuscaEFiltros:

@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError
+from mercado_jogadores.core.unidade_de_trabalho import UnidadeDeTrabalho
 from mercado_jogadores.core.validation import normalizar_para_busca
 from mercado_jogadores.jogadores.calculos import (
     ORDEM_DAS_POSICOES,
@@ -15,6 +16,7 @@ from mercado_jogadores.jogadores.calculos import (
 )
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import FiltrosSql, JogadorRepository
+from mercado_jogadores.liga.repository import EscalacaoRepository
 
 CONDICOES_VALIDAS = ("APTO", "MAL_CONDICIONADO", "DOENTE")
 
@@ -102,8 +104,15 @@ def calcular_indicadores(jogador: Jogador) -> JogadorComCalculados:
 
 
 class JogadorService:
-    def __init__(self, repository: JogadorRepository) -> None:
+    def __init__(
+        self,
+        repository: JogadorRepository,
+        escalacao_repository: EscalacaoRepository,
+        unidade_de_trabalho: UnidadeDeTrabalho,
+    ) -> None:
         self._repository = repository
+        self._escalacoes = escalacao_repository
+        self._uot = unidade_de_trabalho
 
     def cadastrar(self, dados: DadosCadastroJogador) -> JogadorComCalculados:
         atributos = {
@@ -162,8 +171,22 @@ class JogadorService:
         if jogador.condicao == "DOENTE" and nova_condicao == "APTO":
             raise ConflitoError("Jogador DOENTE não pode passar direto para APTO.")
 
+        if nova_condicao == "DOENTE":
+            return self._alterar_para_doente(jogador)
+
         jogador.condicao = nova_condicao
         jogador = self._repository.salvar(jogador)
+        return self._com_calculados(jogador)
+
+    def _alterar_para_doente(self, jogador: Jogador) -> JogadorComCalculados:
+        """RN19.5: titular que fica DOENTE sai da escalação, na mesma operação atômica."""
+        jogador.condicao = "DOENTE"
+        self._escalacoes.remover_titular(jogador.id)
+        try:
+            self._uot.confirmar()
+        except Exception:
+            self._uot.desfazer()
+            raise
         return self._com_calculados(jogador)
 
     def listar(self, filtros: FiltrosDeListagem) -> ListaDeJogadores:

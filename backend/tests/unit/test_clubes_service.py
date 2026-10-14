@@ -9,7 +9,13 @@ from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.service import DadosCadastroJogador, JogadorService
 from mercado_jogadores.mercado.models import Contrato
-from tests.conftest import FakeClubeRepository, FakeContratoRepository, FakeJogadorRepository
+from tests.conftest import (
+    FakeClubeRepository,
+    FakeContratoRepository,
+    FakeEscalacaoRepository,
+    FakeJogadorRepository,
+    FakeUnidadeDeTrabalho,
+)
 
 _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
@@ -35,7 +41,9 @@ def _cadastrar_jogador(fake_repo: FakeJogadorRepository, **sobrescritas: object)
         potential=75,
     )
     dados.update(sobrescritas)
-    resultado = JogadorService(fake_repo).cadastrar(DadosCadastroJogador(**dados))
+    resultado = JogadorService(
+        fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho()
+    ).cadastrar(DadosCadastroJogador(**dados))
     return resultado.jogador
 
 

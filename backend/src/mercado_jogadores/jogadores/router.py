@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from mercado_jogadores.core.db import get_session
+from mercado_jogadores.core.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 from mercado_jogadores.core.validation import validar_id_da_url
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
+from mercado_jogadores.liga.repository import SQLAlchemyEscalacaoRepository
 from mercado_jogadores.jogadores.schemas import (
     CondicaoUpdate,
     JogadorCreate,
@@ -20,7 +22,11 @@ router = APIRouter(prefix="/players", tags=["jogadores"])
 
 
 def get_jogador_service(session: Session = Depends(get_session)) -> JogadorService:
-    return JogadorService(SQLAlchemyJogadorRepository(session))
+    return JogadorService(
+        SQLAlchemyJogadorRepository(session),
+        SQLAlchemyEscalacaoRepository(session),
+        SQLAlchemyUnidadeDeTrabalho(session),
+    )
 
 
 @router.get("", response_model=PlayerListResponse)

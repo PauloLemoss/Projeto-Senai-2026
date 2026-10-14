@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 from mercado_jogadores.clubes.repository import SQLAlchemyClubeRepository
 from mercado_jogadores.core.datas import FUSO_BRASILIA
 from mercado_jogadores.core.db import get_session
+from mercado_jogadores.core.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 from mercado_jogadores.core.validation import validar_id_da_url
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
+from mercado_jogadores.liga.repository import SQLAlchemyEscalacaoRepository
 from mercado_jogadores.mercado.repository import (
     SQLAlchemyContratoRepository,
     SQLAlchemyTransacaoRepository,
@@ -21,7 +23,6 @@ from mercado_jogadores.mercado.schemas import (
     TransactionListQuery,
 )
 from mercado_jogadores.mercado.service import MercadoService
-from mercado_jogadores.mercado.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 
 router = APIRouter(tags=["mercado"])
 
@@ -32,6 +33,7 @@ def get_mercado_service(session: Session = Depends(get_session)) -> MercadoServi
         SQLAlchemyClubeRepository(session),
         SQLAlchemyContratoRepository(session),
         SQLAlchemyTransacaoRepository(session),
+        SQLAlchemyEscalacaoRepository(session),
         SQLAlchemyUnidadeDeTrabalho(session),
     )
 
