@@ -4,8 +4,9 @@ Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK).
 
 > O frontend ainda não foi implementado (change futura). Este README cobre, por enquanto, só o
 > backend, na parte entregue até aqui: cadastro, consulta, edição, alteração de condição,
-> exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores; e cadastro,
-> listagem ordenável e consulta (com elenco, valor do elenco e patrimônio) de clubes.
+> exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores; cadastro,
+> listagem ordenável e consulta (com elenco, valor do elenco e patrimônio) de clubes; e compra,
+> venda, histórico de transações e exportação em CSV (mercado).
 
 ## Estrutura
 
@@ -95,7 +96,9 @@ backend/
 ├── src/mercado_jogadores/
 │   ├── core/             # config, sessão do banco, exceções de domínio, validações comuns
 │   ├── jogadores/        # capability "jogadores": models, schemas, service, repository, router
-│   └── clubes/           # capability "clubes": models, schemas, service, repository, router
+│   ├── clubes/           # capability "clubes": models, schemas, service, repository, router
+│   └── mercado/          # capability "mercado": models, schemas, service, repository, router,
+│                         # unidade_de_trabalho (compra/venda atômicas) e calculos (RN13/15/16)
 └── tests/
     ├── unit/             # cálculos, schemas e service, sem banco (repositório fake)
     └── integration/      # endpoints HTTP via TestClient, contra o Postgres real
@@ -123,11 +126,23 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
   capability `jogadores` já construiu e testou para a listagem (RN07), em vez de duplicar essa
   busca. O cálculo de `overall` e `market_value` de cada jogador também é reaproveitado (função
   `calcular_indicadores`, extraída de `JogadorService` para uso dos dois services).
-- **Campo `contract` do elenco ainda não implementado**: a resposta de `GET /clubs/{id}` traz
-  `players` sem o campo `contract` (fim da fidelidade, dias restantes, % de multa), porque
-  depende da tabela `contratos`, que só existe quando a capability `mercado` (compra) for
-  implementada. Até lá, todo clube consultado tem o elenco vazio por construção (não há como um
-  jogador ganhar `club_id` sem a compra), então isso não afeta nenhum cenário testável hoje.
+- **Operações compostas (compra e venda) são atômicas via uma `UnidadeDeTrabalho`**: em vez de
+  cada `Repository.salvar()` comitar sozinho (o que permitiria um estado parcial se uma escrita
+  seguinte falhasse), `MercadoService.comprar`/`vender` mutam `Jogador`/`Clube` diretamente (já
+  anexados à mesma `Session`), agendam `Contrato`/`Transacao` via `adicionar()` (sem comitar), e
+  só no fim chamam uma `UnidadeDeTrabalho` (`Protocol` com `confirmar`/`desfazer`) que comita ou
+  desfaz tudo de uma vez — sem precisar mudar a interface já testada de `jogadores`/`clubes`.
+- **Data e hora (RN01): fuso fixo, não biblioteca de timezone**: `core/datas.py` usa
+  `timezone(timedelta(hours=-3))` em vez de `ZoneInfo("America/Sao_Paulo")`, porque o enunciado
+  exige `-03:00` sempre, "sem horário de verão" — um fuso nomeado carregaria regras históricas de
+  DST do banco de fusos do sistema operacional.
+- **RN15 (dias restantes e % de multa) é reaproveitada entre `mercado` e `clubes`**: a mesma
+  função pura (`calcular_dias_restantes_e_percentual_de_multa`) calcula a multa na venda e o
+  `contract` de cada jogador do elenco em `GET /clubs/{id}` ("como se fosse vendido agora") — o
+  próprio barema cita essa regra como exemplo do que não pode ser cálculo duplicado.
+- **Exportação CSV usa vírgula decimal**, diferente da convenção de números JSON da API (RN18
+  pede "2 casas e vírgula decimal"): `mercado/service.py` tem um formatador próprio
+  (`_formatar_valor_csv`) só para a exportação, via módulo `csv` da biblioteca padrão.
 - **Arredondamento monetário**: `Decimal` com `ROUND_HALF_UP` em todo lugar (nunca `float` nem o
   `round()` nativo do Python, que arredonda "para o par mais próximo" em empates — o enunciado
   exige "para longe do zero").
@@ -150,8 +165,7 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
 ## 7. Funcionalidades não implementadas
 
 - Frontend (React) — ainda não iniciado.
-- Módulos de Mercado (compra/venda/histórico) e Liga (escalação/partidas) — ainda não
-  implementados.
+- Módulo de Liga (escalação, partidas, classificação) — ainda não implementado.
 
 ## 8. Uso de inteligência artificial
 
@@ -168,7 +182,11 @@ abordagem:
   testes automatizados que conferem as tabelas de exemplo do próprio enunciado.
 - **O que foi aceito, alterado ou descartado**: todas as decisões de arquitetura (camadas,
   padrão de repositório, escolha de bibliotecas, versões exatas) foram revisadas e aprovadas
-  por mim antes da implementação. Durante a implementação, um problema real foi encontrado e
-  corrigido no processo: a serialização padrão do Pydantic devolvia valores monetários como
-  string em vez de número JSON, o que foi detectado pelos próprios testes de integração e
-  corrigido.
+  por mim antes da implementação. Durante a implementação, dois problemas reais foram
+  encontrados e corrigidos no processo: a serialização padrão do Pydantic devolvia valores
+  monetários como string em vez de número JSON (detectado pelos testes de integração); e, na
+  capability `mercado`, um `field_serializer` de uma subclasse (`SellRead`) usava o mesmo nome de
+  método de um já definido na classe-mãe (`TransactionRead`), atropelando silenciosamente o
+  serializer herdado e fazendo dois campos vazarem como `Decimal` em vez de `float` na resposta —
+  só detectado porque o teste comparava a resposta inteira contra o exemplo exato do enunciado,
+  não campo a campo.
