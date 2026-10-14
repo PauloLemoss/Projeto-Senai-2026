@@ -53,8 +53,10 @@ confere que a sigla é uma subsequência que começa no índice 0.
 
 ```python
 def sigla_corresponde_ao_nome(nome: str, sigla: str) -> bool:
-    letras = [c for c in normalizar_para_busca(nome) if c.isalpha()]
     alvo = sigla.lower()
+    if len(set(alvo)) == 1:  # as três letras não podem ser todas iguais
+        return False
+    letras = [c for c in normalizar_para_busca(nome) if c.isalpha()]
     if not letras or letras[0] != alvo[0]:
         return False
     resto = iter(letras[1:])
