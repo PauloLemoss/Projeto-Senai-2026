@@ -118,13 +118,15 @@ ferramenta além do próprio Poetry.
 cd backend
 poetry run poe test          # roda a suíte inteira (unit + integration)
 poetry run poe test-cov      # idem, com relatório de cobertura
-poetry run poe lint          # ruff check
-poetry run poe format        # ruff format
+poetry run poe lint          # ruff check — termina sem erros
+poetry run poe format-check  # ruff format --check — só verifica, nunca altera arquivo
+poetry run poe format        # ruff format — aplica a formatação (dia a dia, não é o comando
+                              # de verificação do diferencial)
 ```
 
 Lista completa de tasks disponíveis em `backend/pyproject.toml` (seção `[tool.poe.tasks]`):
-`install`, `dev`, `test`, `test-cov`, `lint`, `format`, `migrate`, `migrate-reset`, `db-up`,
-`docker-up`, `docker-down`.
+`install`, `dev`, `test`, `test-cov`, `lint`, `format`, `format-check`, `migrate`,
+`migrate-reset`, `db-up`, `docker-up`, `docker-down`.
 
 ## 4. Variáveis de ambiente
 
@@ -269,6 +271,25 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
   falso-positivo para os frameworks usados: `B008` (Depends()/Query() como default de parâmetro é
   o padrão do FastAPI) e `TRY004` (validators do Pydantic levantam `ValueError` de propósito,
   mesmo para erro de tipo — é assim que o Pydantic converte em erro de validação).
+- **`GET /players?club_id=<id>` valida a existência do clube antes de filtrar**: o enunciado exige
+  `404` para `club_id` de clube inexistente nesse filtro; `JogadorService` passou a depender de
+  `ClubeRepository` (mesma composição que `ClubeService` já faz com `JogadorRepository`, na
+  direção oposta) só para checar `obter(club_id) is not None`, sem acoplar a listagem de jogadores
+  a nenhuma regra de clube além dessa.
+- **`club_id`/`home_club_id`/`away_club_id` recusam string, não só valor fora de faixa**: o
+  enunciado (V2) exige recusar `"15"` (texto) em campo inteiro — `BuyRequest` e `MatchCreate`
+  usavam `int` puro do Pydantic, que converte string numérica silenciosamente. Os três campos
+  passaram a usar o validador estrito (`InteiroEstrito`) que o projeto já usa em quase todo outro
+  campo inteiro do corpo (ex.: `player_ids` da escalação).
+- **Log por requisição via `structlog`, não `logging` manual**: o diferencial de "registro de
+  logs" exige uma linha legível com data/hora, método, caminho e status por requisição, gerada por
+  biblioteca de log (nunca `print`). Um middleware HTTP (`core/logging.py` + `main.py`) loga essa
+  linha depois de cada requisição; `structlog` foi escolhido por já resolver timestamp e
+  formatação legível com uma única chamada de configuração, sem escrever um `Formatter` à mão.
+- **`poe format-check` novo, `poe format` sem mudar**: o diferencial de "lint e formatação" exige
+  que o comando de formatação informado no README **só verifique**, sem alterar arquivo nenhum —
+  `ruff format .` (a task `format` já existente) altera; `ruff format --check .` (a task
+  `format-check` nova) só confere e sai com erro se algo não estiver formatado.
 
 ## 7. Funcionalidades não implementadas
 
