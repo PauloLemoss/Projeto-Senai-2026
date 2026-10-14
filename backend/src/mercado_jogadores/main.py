@@ -8,6 +8,7 @@ from mercado_jogadores.clubes.router import router as clubes_router
 from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError, RequisicaoInvalidaError
 from mercado_jogadores.jogadores.router import router as jogadores_router
+from mercado_jogadores.liga.router import router as liga_router
 from mercado_jogadores.mercado.router import router as mercado_router
 
 
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(jogadores_router, prefix="/api/v1")
     app.include_router(clubes_router, prefix="/api/v1")
     app.include_router(mercado_router, prefix="/api/v1")
+    app.include_router(liga_router, prefix="/api/v1")
     return app
 
 
