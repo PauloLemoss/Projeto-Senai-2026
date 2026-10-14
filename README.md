@@ -182,11 +182,20 @@ abordagem:
   testes automatizados que conferem as tabelas de exemplo do próprio enunciado.
 - **O que foi aceito, alterado ou descartado**: todas as decisões de arquitetura (camadas,
   padrão de repositório, escolha de bibliotecas, versões exatas) foram revisadas e aprovadas
-  por mim antes da implementação. Durante a implementação, dois problemas reais foram
-  encontrados e corrigidos no processo: a serialização padrão do Pydantic devolvia valores
-  monetários como string em vez de número JSON (detectado pelos testes de integração); e, na
-  capability `mercado`, um `field_serializer` de uma subclasse (`SellRead`) usava o mesmo nome de
-  método de um já definido na classe-mãe (`TransactionRead`), atropelando silenciosamente o
-  serializer herdado e fazendo dois campos vazarem como `Decimal` em vez de `float` na resposta —
-  só detectado porque o teste comparava a resposta inteira contra o exemplo exato do enunciado,
-  não campo a campo.
+  por mim antes da implementação. Durante a implementação, dois problemas reais de serialização
+  foram encontrados e corrigidos — importante separar dois conceitos aqui: internamente, todo
+  valor monetário é sempre `Decimal` (nunca `float`), para não perder precisão nos cálculos; o
+  problema era só no **formato do JSON da resposta HTTP**, uma camada depois. O Pydantic, quando
+  nenhum `field_serializer` customizado intercepta um campo `Decimal`, serializa esse campo como
+  **string** no JSON (`"fee": "1.85"`, com aspas) — o enunciado exige número puro
+  (`"fee": 1.85`). A correção é um `field_serializer` que converte `Decimal` para `float` só na
+  hora de montar a resposta (`float(Decimal("1.85"))`), sem nenhuma perda de precisão porque o
+  cálculo já tinha terminado em `Decimal`.
+  1. Esse comportamento padrão (sem o `field_serializer`) foi descoberto logo na capability
+     `jogadores`, pelos próprios testes de integração (a resposta vinha com valores entre aspas).
+  2. Na capability `mercado`, o bug voltou de um jeito mais sutil: um `field_serializer` de uma
+     subclasse (`SellRead`) usava o mesmo nome de método de um já definido na classe-mãe
+     (`TransactionRead`), atropelando silenciosamente o serializer herdado — dois campos
+     voltaram a cair no comportamento padrão do Pydantic (viraram string em vez de número) sem
+     que o `Decimal` em si estivesse errado em nenhum momento. Só foi detectado porque o teste
+     comparava a resposta inteira contra o exemplo exato do enunciado, não campo a campo.
