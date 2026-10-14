@@ -7,15 +7,19 @@ dependem de persistência: unicidade, limite de clubes e os valores calculados a
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 
 from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.clubes.repository import ClubeRepository
+from mercado_jogadores.core.datas import FUSO_BRASILIA
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError
 from mercado_jogadores.core.validation import normalizar_para_busca
 from mercado_jogadores.jogadores.calculos import ORDEM_DAS_POSICOES
 from mercado_jogadores.jogadores.repository import FiltrosSql, JogadorRepository
 from mercado_jogadores.jogadores.service import JogadorComCalculados, calcular_indicadores
+from mercado_jogadores.mercado.calculos import calcular_dias_restantes_e_percentual_de_multa
+from mercado_jogadores.mercado.repository import ContratoRepository
 
 LIMITE_DE_CLUBES = 20
 
@@ -27,9 +31,23 @@ class DadosCadastroClube:
 
 
 @dataclass
+class ContratoDoElenco:
+    purchase_value: Decimal
+    loyalty_until: datetime
+    remaining_days: int
+    penalty_rate: int
+
+
+@dataclass
+class JogadorDoElenco:
+    calculados: JogadorComCalculados
+    contract: ContratoDoElenco | None
+
+
+@dataclass
 class ClubeComElenco:
     clube: Clube
-    elenco: list[JogadorComCalculados]
+    elenco: list[JogadorDoElenco]
     squad_value: Decimal
     net_worth: Decimal
 
@@ -43,10 +61,14 @@ class ClubeComPatrimonio:
 
 class ClubeService:
     def __init__(
-        self, clube_repository: ClubeRepository, jogador_repository: JogadorRepository
+        self,
+        clube_repository: ClubeRepository,
+        jogador_repository: JogadorRepository,
+        contrato_repository: ContratoRepository,
     ) -> None:
         self._clubes = clube_repository
         self._jogadores = jogador_repository
+        self._contratos = contrato_repository
 
     def cadastrar(self, dados: DadosCadastroClube) -> ClubeComElenco:
         nome_normalizado = dados.nome.lower()
@@ -65,11 +87,11 @@ class ClubeService:
             caixa=Decimal("300.00"),
         )
         clube = self._clubes.salvar(clube)
-        return self._com_elenco(clube)
+        return self._com_elenco(clube, datetime.now(FUSO_BRASILIA))
 
-    def consultar(self, clube_id: int) -> ClubeComElenco:
+    def consultar(self, clube_id: int, momento: datetime) -> ClubeComElenco:
         clube = self._obter_ou_falhar(clube_id)
-        return self._com_elenco(clube)
+        return self._com_elenco(clube, momento)
 
     def listar(self, sort: str = "name") -> list[ClubeComPatrimonio]:
         clubes = [self._com_patrimonio(c) for c in self._clubes.listar()]
@@ -99,11 +121,31 @@ class ClubeService:
         elenco = sorted(elenco, key=lambda item: ORDEM_DAS_POSICOES.index(item.jogador.posicao))
         return elenco
 
-    def _com_elenco(self, clube: Clube) -> ClubeComElenco:
-        elenco = self._ordenar_elenco(self._elenco_com_valores(clube.id))
-        squad_value = sum((item.market_value for item in elenco), Decimal("0.00"))
+    def _com_elenco(self, clube: Clube, momento: datetime) -> ClubeComElenco:
+        calculados = self._ordenar_elenco(self._elenco_com_valores(clube.id))
+        squad_value = sum((item.market_value for item in calculados), Decimal("0.00"))
+        elenco = [
+            JogadorDoElenco(
+                calculados=item, contract=self._contrato_do_elenco(item.jogador.id, momento)
+            )
+            for item in calculados
+        ]
         return ClubeComElenco(
             clube=clube, elenco=elenco, squad_value=squad_value, net_worth=clube.caixa + squad_value
+        )
+
+    def _contrato_do_elenco(self, jogador_id: int, momento: datetime) -> ContratoDoElenco | None:
+        contrato = self._contratos.obter_ativo_por_jogador(jogador_id)
+        if contrato is None:
+            return None
+        dias_restantes, percentual = calcular_dias_restantes_e_percentual_de_multa(
+            contrato.fidelidade_ate, momento
+        )
+        return ContratoDoElenco(
+            purchase_value=contrato.valor_compra,
+            loyalty_until=contrato.fidelidade_ate,
+            remaining_days=dias_restantes,
+            penalty_rate=percentual,
         )
 
     def _com_patrimonio(self, clube: Clube) -> ClubeComPatrimonio:
