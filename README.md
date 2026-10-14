@@ -18,18 +18,30 @@ Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK).
 
 ## 1. Pré-requisitos
 
+Há dois jeitos de rodar a aplicação — escolha um:
+
+| Jeito | O que precisa instalar |
+| --- | --- |
+| **Docker (recomendado)** | Só Docker + Docker Compose. A API e o Postgres rodam inteiramente em contêiner; não precisa instalar Python nem Poetry na máquina. |
+| **Local (Poetry)** | Python 3.12, [Poetry](https://python-poetry.org) 2.5+, e Docker + Docker Compose (só para o Postgres, que continua em contêiner nos dois casos). |
+
 | Ferramenta | Versão usada no desenvolvimento |
 | --- | --- |
 | Python | 3.12 |
 | [Poetry](https://python-poetry.org) | 2.5 |
 | Docker + Docker Compose | Docker 29, Compose v2 |
 
-O Postgres roda em contêiner (não precisa instalar localmente).
+Funciona em Linux, macOS e Windows (via WSL2, que é o jeito recomendado de rodar Docker no
+Windows). O Postgres sempre roda em contêiner, nos dois jeitos acima — não precisa instalar
+localmente.
 
 ## 2. Criar e recriar o banco de dados
 
 O banco é gerenciado por migrations do [Alembic](https://alembic.sqlalchemy.org), versionadas em
 `backend/alembic/versions/`.
+
+> Rodando via Docker (seção 3, opção A)? Pode pular esta seção — o contêiner `api` roda
+> `alembic upgrade head` sozinho toda vez que sobe.
 
 ```bash
 # Na raiz do repositório: sobe o Postgres
@@ -37,20 +49,45 @@ docker compose up -d db
 
 # Na pasta backend: cria as tabelas
 cd backend
-poetry run alembic upgrade head
+poetry run poe migrate
 ```
 
 Para recriar o banco do zero (apagar e criar de novo):
 
 ```bash
 # Na pasta backend
-poetry run alembic downgrade base
-poetry run alembic upgrade head
+poetry run poe migrate-reset
 ```
 
 O banco criado por esses passos começa vazio, sem jogadores.
 
 ## 3. Instalar e executar
+
+### Opção A: Docker (recomendado — API e Postgres em contêiner)
+
+```bash
+# Na raiz do repositório
+cp .env.example .env
+cp backend/.env.example backend/.env
+docker compose up -d --build
+# API em http://localhost:8000 (o script da banca acrescenta /api/v1)
+# Documentação interativa (Swagger) em http://localhost:8000/docs
+```
+
+O contêiner `api` espera o Postgres ficar saudável, aplica as migrations (`alembic upgrade head`)
+e só então sobe o Uvicorn — não precisa nenhum passo manual além do `docker compose up`. Para
+reconstruir a imagem depois de alterar dependências (`pyproject.toml`), rode o mesmo comando de
+novo (o `--build` força o rebuild).
+
+Parar tudo: `docker compose down` (os dados do Postgres ficam no volume `db_data`; para apagar
+também o volume, `docker compose down -v`).
+
+**Como saber se subiu tudo certo:** `docker compose ps` mostra `(healthy)` ao lado do contêiner
+`api` quando a aplicação está de pé *e* conectando no banco (não só o processo rodando) — isso
+usa o endpoint `GET /health`, que faz um `SELECT 1` real no Postgres a cada checagem. Enquanto
+estiver `(unhealthy)` ou sem essa coluna, a API ainda não está pronta para receber requisições.
+
+### Opção B: Local com Poetry (API fora de contêiner, Postgres em contêiner)
 
 ```bash
 # Banco de dados (na raiz do repositório)
@@ -61,8 +98,8 @@ docker compose up -d db
 cd backend
 cp .env.example .env
 poetry install
-poetry run alembic upgrade head
-poetry run uvicorn mercado_jogadores.main:app --reload
+poetry run poe migrate
+poetry run poe dev
 # API em http://localhost:8000 (o script da banca acrescenta /api/v1)
 # Documentação interativa (Swagger) em http://localhost:8000/docs
 ```
@@ -71,12 +108,23 @@ O frontend ainda não existe nesta entrega.
 
 ### Rodar os testes
 
+As tasks abaixo usam o [poethepoet](https://poethepoet.natn.io) (`poe`), que roda igual em
+Linux, macOS e Windows — os comandos `poetry run poe <task>` dispensam `make` ou qualquer outra
+ferramenta além do próprio Poetry.
+
 ```bash
 # Na pasta backend, com o banco subido (docker compose up -d db) e migrado
-# (poetry run alembic upgrade head) — os testes de integração usam o Postgres real
+# (poetry run poe migrate) — os testes de integração usam o Postgres real
 cd backend
-poetry run pytest
+poetry run poe test          # roda a suíte inteira (unit + integration)
+poetry run poe test-cov      # idem, com relatório de cobertura
+poetry run poe lint          # ruff check
+poetry run poe format        # ruff format
 ```
+
+Lista completa de tasks disponíveis em `backend/pyproject.toml` (seção `[tool.poe.tasks]`):
+`install`, `dev`, `test`, `test-cov`, `lint`, `format`, `migrate`, `migrate-reset`, `db-up`,
+`docker-up`, `docker-down`.
 
 ## 4. Variáveis de ambiente
 
@@ -90,10 +138,16 @@ As portas e credenciais padrão (porta `5433` para o Postgres, em vez da `5432` 
 colisão com outros serviços que já possam estar rodando na máquina; não há necessidade de mudar
 nada para a aplicação funcionar.
 
+> **Nota (Docker):** o `DATABASE_URL` de `backend/.env` aponta para `localhost:5433` (pensado para
+> a API rodar fora de contêiner, opção B). Dentro da rede do `docker-compose.yml` esse host não
+> existe; por isso o serviço `api` sobrescreve `DATABASE_URL` para apontar ao serviço `db` na
+> porta interna `5432` — isso é automático, não precisa editar nada à mão.
+
 ## 5. Estrutura e bibliotecas (backend)
 
 ```
 backend/
+├── Dockerfile            # build multi-stage (Poetry) da imagem da API
 ├── alembic/              # migrations do banco
 ├── src/mercado_jogadores/
 │   ├── core/             # config, sessão do banco, exceções de domínio, validações comuns,
@@ -120,6 +174,7 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
 | `pytest-asyncio` | Suporte a testes assíncronos do pytest (usado pela suíte de testes do FastAPI). |
 | `httpx` | Cliente HTTP usado pelo `TestClient` do FastAPI nos testes de integração. |
 | `ruff` | Lint e formatação do backend (diferencial técnico). |
+| `poethepoet` | Executa as tasks (`poetry run poe test`, `poe lint`, `poe migrate`, etc.) — alternativa a um Makefile que roda igual em Linux/macOS/Windows, sem depender de `make` estar instalado. |
 
 ## 6. Decisões e premissas
 
@@ -190,6 +245,30 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
   depois nome, depois id) — nunca da formação escolhida, que só entra na validação da escalação
   (RN19). Isso evita uma tabela de pareamento por formação, que seria mais uma regra para manter
   sincronizada sem necessidade.
+
+- **Dockerfile multi-stage, não single-stage**: o estágio `builder` instala o Poetry e as
+  dependências; o estágio final (`runtime`) só copia a `venv` já pronta e o código — a imagem
+  final não carrega o Poetry nem o cache de instalação, só o necessário para rodar o Uvicorn.
+- **`poethepoet` em vez de Makefile**: as tasks (`test`, `lint`, `migrate`, etc.) precisavam rodar
+  igual em Linux e Windows. Um Makefile exigiria `make` instalado à parte no Windows (não vem por
+  padrão); o `poethepoet` é uma dependência de desenvolvimento Python comum (`poetry run poe
+  <task>`), então já funciona em qualquer SO que já tenha Poetry — sem instalar mais nada.
+- **`DATABASE_URL` sobrescrito no `docker-compose.yml`, não hardcoded no `backend/.env`**: o
+  mesmo `backend/.env` precisa servir tanto a opção B (API local, Postgres em `localhost:5433`)
+  quanto a opção A (API em contêiner, Postgres no host interno `db:5432`) — em vez de manter dois
+  arquivos de env por ambiente, o serviço `api` do compose sobrescreve só essa variável.
+- **`GET /health` confere o banco, não só o processo**: um healthcheck que só confirma "o Uvicorn
+  está de pé" mentiria se o Postgres caísse (a API continuaria respondendo erro 500 em tudo, mas o
+  Docker reportaria "healthy"). Por isso o endpoint faz um `SELECT 1` real a cada checagem — o
+  `HEALTHCHECK` do Dockerfile e o `healthcheck` do serviço `api` no compose usam esse mesmo
+  endpoint, e é ele que aparece como `(healthy)`/`(unhealthy)` no `docker compose ps`.
+- **Correções de lint aceitas no código inteiro**: ao configurar o `ruff` via `poe lint`, 113
+  avisos pré-existentes apareceram. A maioria era modernização de sintaxe sem risco (`Union[X, Y]`
+  → `X | Y`, `Decimal("0")` → `Decimal(0)`, `dict(...)` → literal em testes, import não usado) e
+  foi corrigida. Duas regras viraram exceção de configuração, não mudança de código, por serem
+  falso-positivo para os frameworks usados: `B008` (Depends()/Query() como default de parâmetro é
+  o padrão do FastAPI) e `TRY004` (validators do Pydantic levantam `ValueError` de propósito,
+  mesmo para erro de tipo — é assim que o Pydantic converte em erro de validação).
 
 ## 7. Funcionalidades não implementadas
 
