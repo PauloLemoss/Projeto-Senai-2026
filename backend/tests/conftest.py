@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 
+from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import FiltrosSql
 
@@ -59,3 +60,48 @@ class FakeJogadorRepository:
 @pytest.fixture
 def fake_repo() -> FakeJogadorRepository:
     return FakeJogadorRepository()
+
+
+class FakeClubeRepository:
+    """Implementa o mesmo `Protocol` de `ClubeRepository`, em memória — sem banco.
+
+    Usado pelos testes do service layer (DIP): a regra de negócio é testada isolada da
+    camada de persistência real.
+    """
+
+    def __init__(self) -> None:
+        self._dados: dict[int, Clube] = {}
+        self._proximo_id = 1
+
+    def obter(self, clube_id: int) -> Clube | None:
+        return self._dados.get(clube_id)
+
+    def obter_por_nome_normalizado(self, nome_normalizado: str) -> Clube | None:
+        for clube in self._dados.values():
+            if clube.nome_normalizado == nome_normalizado:
+                return clube
+        return None
+
+    def obter_por_sigla(self, sigla: str) -> Clube | None:
+        for clube in self._dados.values():
+            if clube.sigla == sigla:
+                return clube
+        return None
+
+    def salvar(self, clube: Clube) -> Clube:
+        if clube.id is None:
+            clube.id = self._proximo_id
+            self._proximo_id += 1
+        self._dados[clube.id] = clube
+        return clube
+
+    def contar(self) -> int:
+        return len(self._dados)
+
+    def listar(self) -> list[Clube]:
+        return list(self._dados.values())
+
+
+@pytest.fixture
+def fake_clube_repo() -> FakeClubeRepository:
+    return FakeClubeRepository()

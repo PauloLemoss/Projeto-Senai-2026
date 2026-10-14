@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
+from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.core.db import SessionLocal, get_session
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.main import app
@@ -15,13 +16,15 @@ def db_session() -> Generator[Session, None, None]:
     """Sessão real contra o Postgres do docker-compose.
 
     O repositório comita internamente (salvar/excluir_logicamente), então isolamento por
-    rollback não funciona aqui — a limpeza é feita apagando a tabela ao final do teste.
+    rollback não funciona aqui — a limpeza é feita apagando as tabelas ao final do teste.
+    `jogadores` antes de `clubes` porque `jogadores.clube_id` tem FK para `clubes.id`.
     """
     session = SessionLocal()
     try:
         yield session
     finally:
         session.execute(delete(Jogador))
+        session.execute(delete(Clube))
         session.commit()
         session.close()
 

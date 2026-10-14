@@ -3,8 +3,15 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
+from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import FiltrosSql, SQLAlchemyJogadorRepository
+
+
+def _novo_clube(**sobrescritas: object) -> Clube:
+    base = dict(nome="Clube Teste", nome_normalizado="clube teste", sigla="CLT")
+    base.update(sobrescritas)
+    return Clube(**base)
 
 
 def _novo_jogador(**sobrescritas: object) -> Jogador:
@@ -76,8 +83,12 @@ def test_listar_filtra_por_condicao(db_session: Session) -> None:
 
 def test_listar_filtra_por_livre(db_session: Session) -> None:
     repo = SQLAlchemyJogadorRepository(db_session)
+    clube = _novo_clube()
+    db_session.add(clube)
+    db_session.commit()
+
     livre = repo.salvar(_novo_jogador(clube_id=None))
-    com_clube = repo.salvar(_novo_jogador(clube_id=1))
+    com_clube = repo.salvar(_novo_jogador(clube_id=clube.id))
 
     resultado = repo.listar(FiltrosSql(free=True))
 
@@ -88,10 +99,15 @@ def test_listar_filtra_por_livre(db_session: Session) -> None:
 
 def test_listar_filtra_por_club_id(db_session: Session) -> None:
     repo = SQLAlchemyJogadorRepository(db_session)
-    do_clube_2 = repo.salvar(_novo_jogador(clube_id=2))
-    do_clube_1 = repo.salvar(_novo_jogador(clube_id=1))
+    clube_1 = _novo_clube(nome="Clube Um", nome_normalizado="clube um", sigla="CU1")
+    clube_2 = _novo_clube(nome="Clube Dois", nome_normalizado="clube dois", sigla="CD2")
+    db_session.add_all([clube_1, clube_2])
+    db_session.commit()
 
-    resultado = repo.listar(FiltrosSql(club_id=2))
+    do_clube_2 = repo.salvar(_novo_jogador(clube_id=clube_2.id))
+    do_clube_1 = repo.salvar(_novo_jogador(clube_id=clube_1.id))
+
+    resultado = repo.listar(FiltrosSql(club_id=clube_2.id))
 
     ids = {j.id for j in resultado}
     assert do_clube_2.id in ids

@@ -3,6 +3,9 @@
 
 from fastapi.testclient import TestClient
 
+from mercado_jogadores.clubes.models import Clube
+from mercado_jogadores.jogadores.models import Jogador
+
 _JOGADOR_VALIDO = {
     "name": "Meia Lua",
     "position": "MEI",
@@ -23,6 +26,14 @@ def _cadastrar(client: TestClient, **sobrescritas: object) -> dict:
     resposta = client.post("/api/v1/players", json=corpo)
     assert resposta.status_code == 201, resposta.text
     return resposta.json()
+
+
+def _atribuir_a_um_clube(db_session, jogador_id: int) -> None:
+    clube = Clube(nome="Clube Teste", nome_normalizado="clube teste", sigla="CLT")
+    db_session.add(clube)
+    db_session.commit()
+    db_session.query(Jogador).filter(Jogador.id == jogador_id).update({"clube_id": clube.id})
+    db_session.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -188,11 +199,8 @@ class TestEdicaoAlteraSoNomePosicaoAgilidadeEIdade:
         assert corpo["potential"] == jogador["potential"]
 
     def test_mudanca_de_posicao_de_jogador_com_clube_e_recusada(self, client: TestClient, db_session) -> None:
-        from mercado_jogadores.jogadores.models import Jogador
-
         jogador = _cadastrar(client)
-        db_session.query(Jogador).filter(Jogador.id == jogador["id"]).update({"clube_id": 1})
-        db_session.commit()
+        _atribuir_a_um_clube(db_session, jogador["id"])
 
         resposta = client.put(
             f"/api/v1/players/{jogador['id']}",
@@ -244,11 +252,8 @@ class TestExclusaoLogicaDeJogadorLivre:
         assert resposta.content == b""
 
     def test_exclusao_de_jogador_com_clube_e_recusada(self, client: TestClient, db_session) -> None:
-        from mercado_jogadores.jogadores.models import Jogador
-
         jogador = _cadastrar(client)
-        db_session.query(Jogador).filter(Jogador.id == jogador["id"]).update({"clube_id": 1})
-        db_session.commit()
+        _atribuir_a_um_clube(db_session, jogador["id"])
 
         resposta = client.delete(f"/api/v1/players/{jogador['id']}")
         assert resposta.status_code == 409

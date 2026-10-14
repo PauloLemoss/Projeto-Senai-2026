@@ -7,6 +7,7 @@ from alembic import context
 
 from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.db import Base
+from mercado_jogadores.clubes.models import Clube  # noqa: F401 (registra no Base.metadata)
 from mercado_jogadores.jogadores.models import Jogador  # noqa: F401 (registra no Base.metadata)
 
 # this is the Alembic Config object, which provides

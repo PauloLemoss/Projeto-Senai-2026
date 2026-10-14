@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DECIMAL, DateTime, Index, Integer, String, func, text
+from sqlalchemy import DECIMAL, DateTime, ForeignKey, Index, Integer, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mercado_jogadores.core.db import Base
@@ -9,9 +9,6 @@ from mercado_jogadores.core.db import Base
 
 class Jogador(Base):
     """Tabela `jogadores` — ver "3. Estrutura de tabelas" do enunciado.
-
-    `clube_id` ainda não tem FK para `clubes.id`: essa tabela nasce numa change futura
-    (capability `clubes`), que adiciona a constraint por migration própria.
 
     Índices (RN07, listagem): `clube_id`, `posicao` e `condicao` atendem os filtros de coluna
     direta de `GET /players`; o índice parcial em `excluido_em` atende toda consulta (não só a
@@ -38,7 +35,9 @@ class Jogador(Base):
     idade: Mapped[int] = mapped_column(Integer, nullable=False)
     valor_base: Mapped[Decimal] = mapped_column(DECIMAL(6, 2), nullable=False)
     condicao: Mapped[str] = mapped_column(String(20), nullable=False, default="APTO")
-    clube_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    clube_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("clubes.id"), nullable=True
+    )
 
     velocidade: Mapped[int] = mapped_column(Integer, nullable=False)
     finalizacao: Mapped[int] = mapped_column(Integer, nullable=False)
