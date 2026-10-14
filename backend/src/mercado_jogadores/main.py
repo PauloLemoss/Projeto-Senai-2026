@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from mercado_jogadores.clubes.router import router as clubes_router
 from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError, RequisicaoInvalidaError
 from mercado_jogadores.jogadores.router import router as jogadores_router
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=exc.status_code, content={"message": str(exc.detail)})
 
     app.include_router(jogadores_router, prefix="/api/v1")
+    app.include_router(clubes_router, prefix="/api/v1")
     return app
 
 
