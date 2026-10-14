@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI, Request
+from collections.abc import Awaitable, Callable
+
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,9 +12,13 @@ from mercado_jogadores.clubes.router import router as clubes_router
 from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.db import get_session
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError, RequisicaoInvalidaError
+from mercado_jogadores.core.logging import configurar_logging, obter_logger
 from mercado_jogadores.jogadores.router import router as jogadores_router
 from mercado_jogadores.liga.router import router as liga_router
 from mercado_jogadores.mercado.router import router as mercado_router
+
+configurar_logging()
+_logger = obter_logger()
 
 
 def create_app() -> FastAPI:
@@ -26,6 +32,18 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def _registrar_log_da_requisicao(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        # Barema B5 "Registro de logs": uma linha por requisição com timestamp (TimeStamper do
+        # structlog), método, caminho e status — nunca print().
+        resposta = await call_next(request)
+        _logger.info(
+            "requisicao", method=request.method, path=request.url.path, status=resposta.status_code
+        )
+        return resposta
 
     @app.exception_handler(NaoEncontradoError)
     async def _tratar_nao_encontrado(request: Request, exc: NaoEncontradoError) -> JSONResponse:

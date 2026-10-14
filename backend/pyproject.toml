@@ -12,7 +12,8 @@ dependencies = [
     "sqlalchemy (>=2.0,<3.0)",
     "psycopg[binary] (>=3.3.6,<4.0.0)",
     "pydantic-settings (>=2.15.0,<3.0.0)",
-    "alembic (>=1.20.0,<2.0.0)"
+    "alembic (>=1.20.0,<2.0.0)",
+    "structlog (>=26.1.0,<27.0.0)"
 ]
 
 
@@ -60,6 +61,7 @@ test = "pytest"
 test-cov = "pytest --cov=mercado_jogadores --cov-report=term-missing"
 lint = "ruff check ."
 format = "ruff format ."
+format-check = "ruff format --check ."
 migrate = "alembic upgrade head"
 migrate-reset = ["migrate-down", "migrate"]
 migrate-down = "alembic downgrade base"
