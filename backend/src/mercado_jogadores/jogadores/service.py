@@ -83,6 +83,24 @@ class ListaDeJogadores:
         return -(-self.total_items // self.limit)  # divisão arredondada para cima
 
 
+def calcular_indicadores(jogador: Jogador) -> JogadorComCalculados:
+    """Overall (RN06) e valor de mercado (RN05), calculados a cada consulta — usado também por
+    `ClubeService` ao montar o elenco (RN11), sem duplicar a regra."""
+    atributos = {
+        "pace": jogador.velocidade,
+        "shooting": jogador.finalizacao,
+        "passing": jogador.passe,
+        "dribbling": jogador.drible,
+        "defending": jogador.defesa,
+        "physical": jogador.fisico,
+    }
+    overall = calcular_overall(atributos, jogador.posicao)
+    market_value = calcular_valor_de_mercado(
+        jogador.valor_base, jogador.condicao, jogador.agilidade, jogador.idade
+    )
+    return JogadorComCalculados(jogador=jogador, overall=overall, market_value=market_value)
+
+
 class JogadorService:
     def __init__(self, repository: JogadorRepository) -> None:
         self._repository = repository
@@ -218,16 +236,4 @@ class JogadorService:
         return lambda r: normalizar_para_busca(r.jogador.nome)
 
     def _com_calculados(self, jogador: Jogador) -> JogadorComCalculados:
-        atributos = {
-            "pace": jogador.velocidade,
-            "shooting": jogador.finalizacao,
-            "passing": jogador.passe,
-            "dribbling": jogador.drible,
-            "defending": jogador.defesa,
-            "physical": jogador.fisico,
-        }
-        overall = calcular_overall(atributos, jogador.posicao)
-        market_value = calcular_valor_de_mercado(
-            jogador.valor_base, jogador.condicao, jogador.agilidade, jogador.idade
-        )
-        return JogadorComCalculados(jogador=jogador, overall=overall, market_value=market_value)
+        return calcular_indicadores(jogador)
