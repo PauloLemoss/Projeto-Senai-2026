@@ -5,6 +5,8 @@ import pytest
 from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import FiltrosSql
+from mercado_jogadores.liga.models import DueloPartida, Partida
+from mercado_jogadores.liga.repository import FiltrosDePartida
 from mercado_jogadores.mercado.models import Contrato, Transacao
 from mercado_jogadores.mercado.repository import FiltrosDeTransacao
 
@@ -181,3 +183,69 @@ class FakeUnidadeDeTrabalho:
 @pytest.fixture
 def fake_unidade_de_trabalho() -> FakeUnidadeDeTrabalho:
     return FakeUnidadeDeTrabalho()
+
+
+class FakeEscalacaoRepository:
+    """Implementa o mesmo `Protocol` de `EscalacaoRepository`, em memória — sem banco."""
+
+    def __init__(self) -> None:
+        self._titulares_por_clube: dict[int, list[int]] = {}
+
+    def listar_titulares_do_clube(self, clube_id: int) -> list[int]:
+        return list(self._titulares_por_clube.get(clube_id, []))
+
+    def substituir_escalacao_do_clube(
+        self, clube_id: int, jogador_ids: list[int], momento: datetime
+    ) -> None:
+        self._titulares_por_clube[clube_id] = list(jogador_ids)
+
+    def remover_titular(self, jogador_id: int) -> None:
+        for titulares in self._titulares_por_clube.values():
+            if jogador_id in titulares:
+                titulares.remove(jogador_id)
+                return
+
+
+@pytest.fixture
+def fake_escalacao_repo() -> FakeEscalacaoRepository:
+    return FakeEscalacaoRepository()
+
+
+class FakePartidaRepository:
+    """Implementa o mesmo `Protocol` de `PartidaRepository`, em memória — sem banco."""
+
+    def __init__(self) -> None:
+        self._partidas: dict[int, Partida] = {}
+        self._duelos: dict[int, list[DueloPartida]] = {}
+        self._proximo_id = 1
+
+    def adicionar(self, partida: Partida) -> Partida:
+        if partida.id is None:
+            partida.id = self._proximo_id
+            self._proximo_id += 1
+        self._partidas[partida.id] = partida
+        self._duelos.setdefault(partida.id, [])
+        return partida
+
+    def adicionar_duelo(self, duelo: DueloPartida) -> None:
+        self._duelos.setdefault(duelo.partida_id, []).append(duelo)
+
+    def listar(self, filtros: FiltrosDePartida) -> list[Partida]:
+        resultado = list(self._partidas.values())
+        if filtros.clube_id is not None:
+            resultado = [
+                p for p in resultado if filtros.clube_id in (p.mandante_id, p.visitante_id)
+            ]
+        resultado.sort(key=lambda p: (p.jogada_em, p.id), reverse=True)
+        return resultado
+
+    def obter(self, partida_id: int) -> Partida | None:
+        return self._partidas.get(partida_id)
+
+    def listar_duelos(self, partida_id: int) -> list[DueloPartida]:
+        return sorted(self._duelos.get(partida_id, []), key=lambda d: d.ordem)
+
+
+@pytest.fixture
+def fake_partida_repo() -> FakePartidaRepository:
+    return FakePartidaRepository()
