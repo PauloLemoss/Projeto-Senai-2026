@@ -1,7 +1,10 @@
 """Testes de ponta a ponta via TestClient, cobrindo cada #### Scenario da spec `clubes`."""
 
+from datetime import datetime, timedelta
+
 from fastapi.testclient import TestClient
 
+from mercado_jogadores.core.datas import FUSO_BRASILIA
 from mercado_jogadores.jogadores.models import Jogador
 
 _JOGADOR_VALIDO = {
@@ -41,6 +44,11 @@ def _atribuir_a_um_clube(db_session, jogador_id: int, clube_id: int) -> None:
 def _primeiras_tres_letras(nome: str) -> str:
     letras = [c for c in nome.upper() if c.isalpha()]
     return "".join(letras[:3])
+
+
+def _loyalty_until_daqui_a(dias: int) -> str:
+    momento = datetime.now(FUSO_BRASILIA) + timedelta(days=dias)
+    return momento.strftime("%Y-%m-%dT%H:%M") + "-03:00"
 
 
 class TestCriacaoDeClube:
@@ -198,3 +206,37 @@ class TestConsultaDeClube:
 
         assert resposta.status_code == 404
         assert resposta.json()["message"]
+
+    def test_jogador_do_elenco_mostra_o_contrato_calculado_na_hora(
+        self, client: TestClient
+    ) -> None:
+        """Reproduz o exemplo 2.2.2 do enunciado: clube depois da compra do exemplo 2.3.1,
+        com ~120 dias restantes de fidelidade na consulta."""
+        jogador = _cadastrar_jogador(client)
+        condicao = client.patch(
+            f"/api/v1/players/{jogador['id']}/condition", json={"condition": "MAL_CONDICIONADO"}
+        )
+        assert condicao.status_code == 200, condicao.text
+        clube = _cadastrar_clube(client)
+
+        compra = client.post(
+            f"/api/v1/players/{jogador['id']}/buy",
+            json={"club_id": clube["id"], "loyalty_until": _loyalty_until_daqui_a(120)},
+        )
+        assert compra.status_code == 200, compra.text
+
+        resposta = client.get(f"/api/v1/clubs/{clube['id']}")
+
+        assert resposta.status_code == 200
+        corpo = resposta.json()
+        assert corpo["cash"] == 261.15
+        assert corpo["squad_value"] == 37.00
+        assert corpo["net_worth"] == 298.15
+        jogador_do_elenco = corpo["players"][0]
+        assert jogador_do_elenco["market_value"] == 37.00
+        assert jogador_do_elenco["contract"] == {
+            "purchase_value": 37.00,
+            "loyalty_until": compra.json()["contract"]["loyalty_until"],
+            "remaining_days": 120,
+            "penalty_rate": 10,
+        }
