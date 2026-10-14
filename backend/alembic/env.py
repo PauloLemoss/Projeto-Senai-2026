@@ -9,6 +9,7 @@ from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.db import Base
 from mercado_jogadores.clubes.models import Clube  # noqa: F401 (registra no Base.metadata)
 from mercado_jogadores.jogadores.models import Jogador  # noqa: F401 (registra no Base.metadata)
+from mercado_jogadores.mercado.models import Contrato, Transacao  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
