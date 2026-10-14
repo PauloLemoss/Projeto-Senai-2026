@@ -10,8 +10,14 @@ from pydantic import (
     model_validator,
 )
 
-from mercado_jogadores.clubes.service import ClubeComElenco, ClubeComPatrimonio, DadosCadastroClube
+from mercado_jogadores.clubes.service import (
+    ClubeComElenco,
+    ClubeComPatrimonio,
+    DadosCadastroClube,
+    JogadorDoElenco,
+)
 from mercado_jogadores.clubes.validacao import sigla_corresponde_ao_nome
+from mercado_jogadores.core.datas import formatar_datetime_rn01
 from mercado_jogadores.core.validation import normalizar_texto
 from mercado_jogadores.jogadores.schemas import JogadorRead
 
@@ -92,10 +98,63 @@ class ClubeRead(BaseModel):
         )
 
 
-class ClubeComElencoRead(ClubeRead):
-    """`GET /clubs/{id}`: adiciona o elenco. Sem o campo `contract` — ver design.md, Non-Goals."""
+class ContratoDoElencoRead(BaseModel):
+    """`contract` de cada jogador do elenco (RN11) — formato diferente do `contract` de
+    `BuyRead` (sem `status`; com `remaining_days`/`penalty_rate`, calculados a cada consulta)."""
 
-    players: list[JogadorRead]
+    purchase_value: Decimal
+    loyalty_until: str
+    remaining_days: int
+    penalty_rate: int
+
+    @field_serializer("purchase_value")
+    def _serializar_moeda_como_numero(self, valor: Decimal) -> float:
+        return float(valor)
+
+
+class JogadorDoElencoRead(JogadorRead):
+    """Jogador do elenco de `GET /clubs/{id}`: adiciona `contract`."""
+
+    contract: ContratoDoElencoRead | None
+
+    @classmethod
+    def a_partir_do_resultado(cls, item: JogadorDoElenco) -> "JogadorDoElencoRead":
+        resultado = item.calculados
+        jogador = resultado.jogador
+        contract = None
+        if item.contract is not None:
+            contract = ContratoDoElencoRead(
+                purchase_value=item.contract.purchase_value,
+                loyalty_until=formatar_datetime_rn01(item.contract.loyalty_until),
+                remaining_days=item.contract.remaining_days,
+                penalty_rate=item.contract.penalty_rate,
+            )
+        return cls(
+            id=jogador.id,
+            name=jogador.nome,
+            position=jogador.posicao,  # type: ignore[arg-type]
+            agility=jogador.agilidade,
+            age=jogador.idade,
+            condition=jogador.condicao,  # type: ignore[arg-type]
+            base_value=jogador.valor_base,
+            market_value=resultado.market_value,
+            pace=jogador.velocidade,
+            shooting=jogador.finalizacao,
+            passing=jogador.passe,
+            dribbling=jogador.drible,
+            defending=jogador.defesa,
+            physical=jogador.fisico,
+            potential=jogador.potencial,
+            overall=resultado.overall,
+            club_id=jogador.clube_id,
+            contract=contract,
+        )
+
+
+class ClubeComElencoRead(ClubeRead):
+    """`GET /clubs/{id}`: adiciona o elenco, com o `contract` de cada jogador (RN11)."""
+
+    players: list[JogadorDoElencoRead]
 
     @classmethod
     def a_partir_do_resultado(cls, resultado: ClubeComElenco) -> "ClubeComElencoRead":
@@ -106,5 +165,7 @@ class ClubeComElencoRead(ClubeRead):
             cash=resultado.clube.caixa,
             squad_value=resultado.squad_value,
             net_worth=resultado.net_worth,
-            players=[JogadorRead.a_partir_do_resultado(item) for item in resultado.elenco],
+            players=[
+                JogadorDoElencoRead.a_partir_do_resultado(item) for item in resultado.elenco
+            ],
         )

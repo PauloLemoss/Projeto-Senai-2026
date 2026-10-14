@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Response
@@ -6,9 +7,11 @@ from sqlalchemy.orm import Session
 from mercado_jogadores.clubes.repository import SQLAlchemyClubeRepository
 from mercado_jogadores.clubes.schemas import ClubeComElencoRead, ClubeCreate, ClubeRead
 from mercado_jogadores.clubes.service import ClubeService
+from mercado_jogadores.core.datas import FUSO_BRASILIA
 from mercado_jogadores.core.db import get_session
 from mercado_jogadores.core.validation import validar_id_da_url
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
+from mercado_jogadores.mercado.repository import SQLAlchemyContratoRepository
 
 router = APIRouter(prefix="/clubs", tags=["clubes"])
 
@@ -17,7 +20,9 @@ SortDeClubes = Literal["name", "net_worth_asc", "net_worth_desc"]
 
 def get_clube_service(session: Session = Depends(get_session)) -> ClubeService:
     return ClubeService(
-        SQLAlchemyClubeRepository(session), SQLAlchemyJogadorRepository(session)
+        SQLAlchemyClubeRepository(session),
+        SQLAlchemyJogadorRepository(session),
+        SQLAlchemyContratoRepository(session),
     )
 
 
@@ -46,5 +51,5 @@ def consultar_clube(
     clube_id: str, service: ClubeService = Depends(get_clube_service)
 ) -> ClubeComElencoRead:
     id_valido = validar_id_da_url(clube_id)
-    resultado = service.consultar(id_valido)
+    resultado = service.consultar(id_valido, datetime.now(FUSO_BRASILIA))
     return ClubeComElencoRead.a_partir_do_resultado(resultado)
