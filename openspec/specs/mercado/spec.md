@@ -63,7 +63,8 @@ ele mesmo já vendeu (outro clube pode). A resposta SHALL trazer os campos da tr
 - **THEN** a API responde `400` com `message`
 
 #### Scenario: club_id inválido é recusado
-- **WHEN** o cliente envia `club_id` 0 ou negativo
+- **WHEN** o cliente envia `club_id` 0, negativo, ou como string (ex.: `"1"`), em vez de um
+  inteiro positivo
 - **THEN** a API responde `400` com `message` (diferente do clube inexistente, que é `404`)
 
 #### Scenario: loyalty_until fora do formato da RN01 é recusado

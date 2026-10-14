@@ -160,10 +160,12 @@ maiúsculas, minúsculas e acentos. Os filtros disponíveis — `position`, `con
 (`min_value`/`max_value`, 0 a 550, nunca o valor base) — SHALL ser combináveis entre si, aplicados
 antes da paginação. Quando só um dos limites de uma faixa (`min_age`/`max_age` ou
 `min_value`/`max_value`) for enviado, o outro SHALL assumir o extremo correspondente da faixa
-aceita (ex.: só `min_age` enviado equivale a `max_age=45`). `meta.total_items` SHALL contar todos
-os jogadores que atendem à busca e aos filtros (não só os da página atual), e `meta.total_pages`
-SHALL ser `total_items ÷ limit`, arredondado para cima (`0` quando não houver itens). Uma página
-além da última SHALL responder `200` com `data: []` e o `meta` correto, nunca `404`.
+aceita (ex.: só `min_age` enviado equivale a `max_age=45`). Quando `club_id` for informado, o
+sistema SHALL responder `404` se o clube não existir, antes de aplicar qualquer outro filtro.
+`meta.total_items` SHALL contar todos os jogadores que atendem à busca e aos filtros (não só os da
+página atual), e `meta.total_pages` SHALL ser `total_items ÷ limit`, arredondado para cima (`0`
+quando não houver itens). Uma página além da última SHALL responder `200` com `data: []` e o
+`meta` correto, nunca `404`.
 
 #### Scenario: Busca ignora acentos e caixa
 - **WHEN** o cliente busca `search=joao`
@@ -197,6 +199,10 @@ além da última SHALL responder `200` com `data: []` e o `meta` correto, nunca 
 #### Scenario: Faixa com um só limite assume o extremo correspondente
 - **WHEN** o cliente envia só `min_age=30`, sem `max_age`
 - **THEN** o filtro é aplicado como se `max_age` fosse `45` (o extremo superior aceito)
+
+#### Scenario: Filtro por club_id de clube inexistente é recusado
+- **WHEN** o cliente filtra `GET /players?club_id=<id>` com um `club_id` de clube que não existe
+- **THEN** a API responde `404` com `message`, mesmo que algum jogador atenda aos demais filtros
 
 ### Requirement: Ordenação da listagem de jogadores
 `sort` SHALL aceitar `name` (padrão), `value_asc`, `value_desc`, `age_asc`, `age_desc` e
