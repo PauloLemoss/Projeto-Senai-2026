@@ -39,7 +39,15 @@ def test_espacos_redundantes_no_nome_sao_normalizados() -> None:
 
 
 def test_soma_dos_atributos_acima_de_480_e_recusada() -> None:
-    dados = {**_BASE, "pace": 99, "shooting": 99, "passing": 99, "dribbling": 99, "defending": 99, "physical": 10}
+    dados = {
+        **_BASE,
+        "pace": 99,
+        "shooting": 99,
+        "passing": 99,
+        "dribbling": 99,
+        "defending": 99,
+        "physical": 10,
+    }
     with pytest.raises(ValidationError):
         JogadorCreate(**dados)
 

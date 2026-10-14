@@ -48,12 +48,16 @@ class TestCorpoDeveSerObjetoJson:
         assert resposta.json()["message"]
 
     def test_corpo_e_um_valor_simples(self, client: TestClient) -> None:
-        resposta = client.post("/api/v1/players", content='"x"', headers={"Content-Type": "application/json"})
+        resposta = client.post(
+            "/api/v1/players", content='"x"', headers={"Content-Type": "application/json"}
+        )
         assert resposta.status_code == 400
 
     def test_json_malformado(self, client: TestClient) -> None:
         resposta = client.post(
-            "/api/v1/players", content="{isso nao e json", headers={"Content-Type": "application/json"}
+            "/api/v1/players",
+            content="{isso nao e json",
+            headers={"Content-Type": "application/json"},
         )
         assert resposta.status_code == 400
 
@@ -178,7 +182,9 @@ class TestConsultaCalculaOverallEValorDeMercado:
 
     def test_desconto_reduzido_pela_metade_por_alta_agilidade(self, client: TestClient) -> None:
         jogador = _cadastrar(client, agility=80)
-        client.patch(f"/api/v1/players/{jogador['id']}/condition", json={"condition": "MAL_CONDICIONADO"})
+        client.patch(
+            f"/api/v1/players/{jogador['id']}/condition", json={"condition": "MAL_CONDICIONADO"}
+        )
 
         resposta = client.get(f"/api/v1/players/{jogador['id']}")
         # valor_base 40.00, MAL_CONDICIONADO + agilidade 80 (desconto/2=7.5%), idade 25 (0%)
@@ -198,7 +204,9 @@ class TestEdicaoAlteraSoNomePosicaoAgilidadeEIdade:
         assert corpo["base_value"] == jogador["base_value"]
         assert corpo["potential"] == jogador["potential"]
 
-    def test_mudanca_de_posicao_de_jogador_com_clube_e_recusada(self, client: TestClient, db_session) -> None:
+    def test_mudanca_de_posicao_de_jogador_com_clube_e_recusada(
+        self, client: TestClient, db_session
+    ) -> None:
         jogador = _cadastrar(client)
         _atribuir_a_um_clube(db_session, jogador["id"])
 

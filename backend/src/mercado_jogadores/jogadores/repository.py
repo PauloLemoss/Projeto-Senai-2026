@@ -41,9 +41,7 @@ class SQLAlchemyJogadorRepository:
         self._session = session
 
     def obter(self, jogador_id: int) -> Jogador | None:
-        stmt = select(Jogador).where(
-            Jogador.id == jogador_id, Jogador.excluido_em.is_(None)
-        )
+        stmt = select(Jogador).where(Jogador.id == jogador_id, Jogador.excluido_em.is_(None))
         return self._session.execute(stmt).scalar_one_or_none()
 
     def salvar(self, jogador: Jogador) -> Jogador:

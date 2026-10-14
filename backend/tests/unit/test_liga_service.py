@@ -23,19 +23,33 @@ _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
 
 def _novo_clube(fake_clube_repo: FakeClubeRepository, **sobrescritas: object) -> Clube:
-    dados = dict(
-        nome="Águias FC", nome_normalizado="águias fc", sigla="AGU", caixa=Decimal("300.00")
-    )
+    dados = {
+        "nome": "Águias FC",
+        "nome_normalizado": "águias fc",
+        "sigla": "AGU",
+        "caixa": Decimal("300.00"),
+    }
     dados.update(sobrescritas)
     return fake_clube_repo.salvar(Clube(**dados))
 
 
 def _novo_jogador(fake_repo: FakeJogadorRepository, **sobrescritas: object) -> Jogador:
-    dados = dict(
-        nome="Jogador Teste", posicao="MEI", agilidade=70, idade=25, valor_base=Decimal("40.00"),
-        condicao="APTO", clube_id=None, velocidade=70, finalizacao=60, passe=70, drible=60,
-        defesa=55, fisico=60, potencial=75,
-    )
+    dados = {
+        "nome": "Jogador Teste",
+        "posicao": "MEI",
+        "agilidade": 70,
+        "idade": 25,
+        "valor_base": Decimal("40.00"),
+        "condicao": "APTO",
+        "clube_id": None,
+        "velocidade": 70,
+        "finalizacao": 60,
+        "passe": 70,
+        "drible": 60,
+        "defesa": 55,
+        "fisico": 60,
+        "potencial": 75,
+    }
     dados.update(sobrescritas)
     return fake_repo.salvar(Jogador(**dados))
 
@@ -61,7 +75,9 @@ def _titulares_2_1_1(
     for i, posicao in enumerate(posicoes):
         overrides = dict(sobrescritas_por_posicao.get(posicao, {}))
         jogadores.append(
-            _novo_jogador(fake_repo, nome=f"Jogador {i}", posicao=posicao, clube_id=clube_id, **overrides)
+            _novo_jogador(
+                fake_repo, nome=f"Jogador {i}", posicao=posicao, clube_id=clube_id, **overrides
+            )
         )
     return jogadores
 
@@ -77,7 +93,13 @@ class TestEscalar:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         titulares = _titulares_2_1_1(fake_repo, clube.id)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         # escalação anterior, com outro conjunto de titulares
         outro_jogador = _novo_jogador(fake_repo, nome="Reserva", posicao="GOL", clube_id=clube.id)
         fake_escalacao_repo.substituir_escalacao_do_clube(clube.id, [outro_jogador.id], _MOMENTO)
@@ -105,7 +127,13 @@ class TestEscalar:
         clube = _novo_clube(fake_clube_repo)
         titulares = _titulares_2_1_1(fake_repo, clube.id)
         jogador_livre = _novo_jogador(fake_repo, nome="Livre", posicao="ATA", clube_id=None)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         ids = [j.id for j in titulares[:4]] + [jogador_livre.id]
 
         with pytest.raises(ConflitoError):
@@ -122,10 +150,14 @@ class TestEscalar:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
-        titulares = _titulares_2_1_1(
-            fake_repo, clube.id, ATA={"condicao": "DOENTE"}
+        titulares = _titulares_2_1_1(fake_repo, clube.id, ATA={"condicao": "DOENTE"})
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
         )
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
 
         with pytest.raises(ConflitoError):
             service.escalar(
@@ -148,7 +180,13 @@ class TestEscalar:
             _novo_jogador(fake_repo, nome=f"Jogador {i}", posicao=p, clube_id=clube.id)
             for i, p in enumerate(["GOL", "GOL", "ZAG", "LAT", "ATA"])
         ]
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(ConflitoError):
             service.escalar(
@@ -165,10 +203,18 @@ class TestEscalar:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(NaoEncontradoError):
-            service.escalar(999, DadosDeEscalacao(formation="2-1-1", player_ids=[1, 2, 3, 4, 5]), _MOMENTO)
+            service.escalar(
+                999, DadosDeEscalacao(formation="2-1-1", player_ids=[1, 2, 3, 4, 5]), _MOMENTO
+            )
 
     def test_jogador_inexistente_e_recusado(
         self,
@@ -180,7 +226,13 @@ class TestEscalar:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         titulares = _titulares_2_1_1(fake_repo, clube.id)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         ids = [j.id for j in titulares[:4]] + [999_999]
 
         with pytest.raises(NaoEncontradoError):
@@ -197,7 +249,13 @@ class TestConsultarEscalacao:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         resultado = service.consultar_escalacao(clube.id)
 
@@ -215,9 +273,17 @@ class TestConsultarEscalacao:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         titulares = _titulares_2_1_1(fake_repo, clube.id)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         service.escalar(
-            clube.id, DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares]), _MOMENTO
+            clube.id,
+            DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares]),
+            _MOMENTO,
         )
 
         resultado = service.consultar_escalacao(clube.id)
@@ -225,7 +291,13 @@ class TestConsultarEscalacao:
         assert resultado.complete is True
         assert len(resultado.titulares) == 5
         # ordem do elenco: GOL, ZAG, LAT, MEI, ATA
-        assert [t.jogador.posicao for t in resultado.titulares] == ["GOL", "ZAG", "LAT", "MEI", "ATA"]
+        assert [t.jogador.posicao for t in resultado.titulares] == [
+            "GOL",
+            "ZAG",
+            "LAT",
+            "MEI",
+            "ATA",
+        ]
 
     def test_clube_com_escalacao_incompleta_depois_de_uma_venda(
         self,
@@ -237,9 +309,17 @@ class TestConsultarEscalacao:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         titulares = _titulares_2_1_1(fake_repo, clube.id)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         service.escalar(
-            clube.id, DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares]), _MOMENTO
+            clube.id,
+            DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares]),
+            _MOMENTO,
         )
 
         fake_escalacao_repo.remover_titular(titulares[0].id)  # simula o efeito da venda/DOENTE
@@ -258,7 +338,13 @@ class TestConsultarEscalacao:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(NaoEncontradoError):
             service.consultar_escalacao(999)
@@ -273,11 +359,22 @@ def _jogador_do_exemplo(
     condicao: str = "APTO",
     **atributos: int,
 ) -> Jogador:
-    base = dict(
-        nome=nome, posicao=posicao, agilidade=70, idade=25, valor_base=Decimal("40.00"),
-        condicao=condicao, clube_id=clube_id, velocidade=0, finalizacao=0, passe=0, drible=0,
-        defesa=0, fisico=0, potencial=75,
-    )
+    base = {
+        "nome": nome,
+        "posicao": posicao,
+        "agilidade": 70,
+        "idade": 25,
+        "valor_base": Decimal("40.00"),
+        "condicao": condicao,
+        "clube_id": clube_id,
+        "velocidade": 0,
+        "finalizacao": 0,
+        "passe": 0,
+        "drible": 0,
+        "defesa": 0,
+        "fisico": 0,
+        "potencial": 75,
+    }
     base.update(atributos)
     return fake_repo.salvar(Jogador(id=jogador_id, **base))
 
@@ -294,8 +391,14 @@ def _escalar_aguias_e_delta(
         _jogador_do_exemplo(fake_repo, 30, aguias.id, "Rui Prado", "GOL", defesa=77),
         _jogador_do_exemplo(fake_repo, 32, aguias.id, "Téo Brandão", "ZAG", defesa=84),
         _jogador_do_exemplo(
-            fake_repo, 31, aguias.id, "Davi Lins", "LAT", condicao="MAL_CONDICIONADO",
-            drible=74, defesa=66,
+            fake_repo,
+            31,
+            aguias.id,
+            "Davi Lins",
+            "LAT",
+            condicao="MAL_CONDICIONADO",
+            drible=74,
+            defesa=66,
         ),
         _jogador_do_exemplo(fake_repo, 33, aguias.id, "Lauro Neves", "MEI", passe=82),
         _jogador_do_exemplo(fake_repo, 34, aguias.id, "Otto Rangel", "ATA", finalizacao=75),
@@ -309,10 +412,14 @@ def _escalar_aguias_e_delta(
     ]
 
     service.escalar(
-        aguias.id, DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares_aguias]), _MOMENTO
+        aguias.id,
+        DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares_aguias]),
+        _MOMENTO,
     )
     service.escalar(
-        delta.id, DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares_delta]), _MOMENTO
+        delta.id,
+        DadosDeEscalacao(formation="2-1-1", player_ids=[j.id for j in titulares_delta]),
+        _MOMENTO,
     )
     return aguias, delta
 
@@ -326,7 +433,13 @@ class TestJogarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         aguias, delta = _escalar_aguias_e_delta(fake_clube_repo, fake_repo, service)
 
         resultado = service.jogar_partida(
@@ -342,8 +455,15 @@ class TestJogarPartida:
         assert resultado.visitante.formation == "2-1-1"
         assert len(resultado.duelos) == 6
         tabela = [
-            (d.ordem, d.clube_atacante_id, d.nome_atacante, d.valor_ataque, d.nome_defensor,
-             d.valor_defesa, d.gol)
+            (
+                d.ordem,
+                d.clube_atacante_id,
+                d.nome_atacante,
+                d.valor_ataque,
+                d.nome_defensor,
+                d.valor_defesa,
+                d.gol,
+            )
             for d in resultado.duelos
         ]
         assert tabela == [
@@ -364,7 +484,13 @@ class TestJogarPartida:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(RequisicaoInvalidaError):
             service.jogar_partida(
@@ -380,7 +506,13 @@ class TestJogarPartida:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(NaoEncontradoError):
             service.jogar_partida(DadosDePartida(home_club_id=clube.id, away_club_id=999), _MOMENTO)
@@ -393,7 +525,13 @@ class TestJogarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         aguias, delta = _escalar_aguias_e_delta(fake_clube_repo, fake_repo, service)
         fake_escalacao_repo.remover_titular(30)  # Águias fica com só 4 titulares
 
@@ -412,7 +550,13 @@ class TestJogarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         aguias, delta = _escalar_aguias_e_delta(fake_clube_repo, fake_repo, service)
         caixa_aguias_antes = aguias.caixa
         caixa_delta_antes = delta.caixa
@@ -440,17 +584,41 @@ class TestHistoricoEConsultarPartida:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube_a = _novo_clube(fake_clube_repo)
-        clube_b = _novo_clube(fake_clube_repo, nome="Delta FC", nome_normalizado="delta fc", sigla="DEL")
-        clube_c = _novo_clube(fake_clube_repo, nome="Gama SC", nome_normalizado="gama sc", sigla="GAM")
+        clube_b = _novo_clube(
+            fake_clube_repo, nome="Delta FC", nome_normalizado="delta fc", sigla="DEL"
+        )
+        clube_c = _novo_clube(
+            fake_clube_repo, nome="Gama SC", nome_normalizado="gama sc", sigla="GAM"
+        )
         p1 = fake_partida_repo.adicionar(
-            Partida(mandante_id=clube_a.id, visitante_id=clube_b.id, gols_mandante=1, gols_visitante=0,
-                    formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO)
+            Partida(
+                mandante_id=clube_a.id,
+                visitante_id=clube_b.id,
+                gols_mandante=1,
+                gols_visitante=0,
+                formacao_mandante="2-1-1",
+                formacao_visitante="2-1-1",
+                jogada_em=_MOMENTO,
+            )
         )
         p2 = fake_partida_repo.adicionar(
-            Partida(mandante_id=clube_b.id, visitante_id=clube_c.id, gols_mandante=0, gols_visitante=0,
-                    formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO)
+            Partida(
+                mandante_id=clube_b.id,
+                visitante_id=clube_c.id,
+                gols_mandante=0,
+                gols_visitante=0,
+                formacao_mandante="2-1-1",
+                formacao_visitante="2-1-1",
+                jogada_em=_MOMENTO,
+            )
         )
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         todas = service.historico(FiltrosDePartida())
         assert [p.id for p in todas] == [p2.id, p1.id]
@@ -466,7 +634,13 @@ class TestHistoricoEConsultarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(NaoEncontradoError):
             service.historico(FiltrosDePartida(clube_id=999))
@@ -479,7 +653,13 @@ class TestHistoricoEConsultarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         aguias, delta = _escalar_aguias_e_delta(fake_clube_repo, fake_repo, service)
         jogada = service.jogar_partida(
             DadosDePartida(home_club_id=aguias.id, away_club_id=delta.id), _MOMENTO
@@ -498,7 +678,13 @@ class TestHistoricoEConsultarPartida:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         with pytest.raises(NaoEncontradoError):
             service.consultar_partida(999)
@@ -513,20 +699,30 @@ class TestClassificacao:
         fake_partida_repo: FakePartidaRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        aguias = _novo_clube(fake_clube_repo, nome="Águias FC", nome_normalizado="águias fc", sigla="AGU")
-        delta = _novo_clube(fake_clube_repo, nome="Delta FC", nome_normalizado="delta fc", sigla="DEL")
+        aguias = _novo_clube(
+            fake_clube_repo, nome="Águias FC", nome_normalizado="águias fc", sigla="AGU"
+        )
+        delta = _novo_clube(
+            fake_clube_repo, nome="Delta FC", nome_normalizado="delta fc", sigla="DEL"
+        )
         gama = _novo_clube(fake_clube_repo, nome="Gama SC", nome_normalizado="gama sc", sigla="GAM")
-        epsilon = _novo_clube(fake_clube_repo, nome="Épsilon EC", nome_normalizado="épsilon ec", sigla="EPS")
-        mangue = _novo_clube(fake_clube_repo, nome="Mangue FC", nome_normalizado="mangue fc", sigla="MAN")
-        tubaroes = _novo_clube(
+        epsilon = _novo_clube(
+            fake_clube_repo, nome="Épsilon EC", nome_normalizado="épsilon ec", sigla="EPS"
+        )
+        _novo_clube(fake_clube_repo, nome="Mangue FC", nome_normalizado="mangue fc", sigla="MAN")
+        _novo_clube(
             fake_clube_repo, nome="Tubarões EC", nome_normalizado="tubarões ec", sigla="TUB"
         )
 
         def _partida(mandante: Clube, visitante: Clube, gm: int, gv: int) -> None:
             fake_partida_repo.adicionar(
                 Partida(
-                    mandante_id=mandante.id, visitante_id=visitante.id, gols_mandante=gm,
-                    gols_visitante=gv, formacao_mandante="2-1-1", formacao_visitante="2-1-1",
+                    mandante_id=mandante.id,
+                    visitante_id=visitante.id,
+                    gols_mandante=gm,
+                    gols_visitante=gv,
+                    formacao_mandante="2-1-1",
+                    formacao_visitante="2-1-1",
                     jogada_em=_MOMENTO,
                 )
             )
@@ -536,11 +732,22 @@ class TestClassificacao:
         _partida(epsilon, aguias, 3, 2)
         _partida(delta, gama, 0, 1)
 
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
         classificacao = service.classificacao()
 
         assert [linha.club_name for linha in classificacao] == [
-            "Gama SC", "Épsilon EC", "Delta FC", "Mangue FC", "Tubarões EC", "Águias FC",
+            "Gama SC",
+            "Épsilon EC",
+            "Delta FC",
+            "Mangue FC",
+            "Tubarões EC",
+            "Águias FC",
         ]
         assert [linha.position for linha in classificacao] == [1, 2, 3, 4, 5, 6]
         gama_linha = classificacao[0]
@@ -558,15 +765,27 @@ class TestClassificacao:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
-        service = _service(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, fake_unidade_de_trabalho)
+        service = _service(
+            fake_clube_repo,
+            fake_repo,
+            fake_escalacao_repo,
+            fake_partida_repo,
+            fake_unidade_de_trabalho,
+        )
 
         classificacao = service.classificacao()
 
         linha = classificacao[0]
         assert linha.club_id == clube.id
         assert (
-            linha.played, linha.wins, linha.draws, linha.losses, linha.goals_for,
-            linha.goals_against, linha.goal_difference, linha.points,
+            linha.played,
+            linha.wins,
+            linha.draws,
+            linha.losses,
+            linha.goals_for,
+            linha.goals_against,
+            linha.goal_difference,
+            linha.points,
         ) == (0, 0, 0, 0, 0, 0, 0, 0)
 
 
@@ -597,9 +816,13 @@ def test_falha_ao_confirmar_jogar_partida_aciona_o_rollback_e_propaga_o_erro(
     aguias, delta = _escalar_aguias_e_delta(fake_clube_repo, fake_repo, service_para_escalar)
 
     uot_que_falha = _UnidadeDeTrabalhoQueFalhaAoConfirmar()
-    service = LigaService(fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, uot_que_falha)
+    service = LigaService(
+        fake_clube_repo, fake_repo, fake_escalacao_repo, fake_partida_repo, uot_que_falha
+    )
 
     with pytest.raises(RuntimeError):
-        service.jogar_partida(DadosDePartida(home_club_id=aguias.id, away_club_id=delta.id), _MOMENTO)
+        service.jogar_partida(
+            DadosDePartida(home_club_id=aguias.id, away_club_id=delta.id), _MOMENTO
+        )
 
     assert uot_que_falha.desfez is True

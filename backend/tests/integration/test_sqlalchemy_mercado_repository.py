@@ -18,57 +18,57 @@ _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
 
 def _novo_jogador(**sobrescritas: object) -> Jogador:
-    base = dict(
-        nome="Meia Lua",
-        posicao="MEI",
-        agilidade=85,
-        idade=25,
-        valor_base=Decimal("40.00"),
-        condicao="APTO",
-        velocidade=70,
-        finalizacao=68,
-        passe=82,
-        drible=79,
-        defesa=55,
-        fisico=64,
-        potencial=86,
-    )
+    base = {
+        "nome": "Meia Lua",
+        "posicao": "MEI",
+        "agilidade": 85,
+        "idade": 25,
+        "valor_base": Decimal("40.00"),
+        "condicao": "APTO",
+        "velocidade": 70,
+        "finalizacao": 68,
+        "passe": 82,
+        "drible": 79,
+        "defesa": 55,
+        "fisico": 64,
+        "potencial": 86,
+    }
     base.update(sobrescritas)
     return Jogador(**base)
 
 
 def _novo_clube(**sobrescritas: object) -> Clube:
-    base = dict(nome="Águias FC", nome_normalizado="águias fc", sigla="AGU")
+    base = {"nome": "Águias FC", "nome_normalizado": "águias fc", "sigla": "AGU"}
     base.update(sobrescritas)
     return Clube(**base)
 
 
 def _novo_contrato(jogador_id: int, clube_id: int, **sobrescritas: object) -> Contrato:
-    base = dict(
-        jogador_id=jogador_id,
-        clube_id=clube_id,
-        valor_compra=Decimal("37.00"),
-        fidelidade_ate=_MOMENTO + timedelta(days=365),
-        situacao="ATIVO",
-        iniciado_em=_MOMENTO,
-    )
+    base = {
+        "jogador_id": jogador_id,
+        "clube_id": clube_id,
+        "valor_compra": Decimal("37.00"),
+        "fidelidade_ate": _MOMENTO + timedelta(days=365),
+        "situacao": "ATIVO",
+        "iniciado_em": _MOMENTO,
+    }
     base.update(sobrescritas)
     return Contrato(**base)
 
 
 def _nova_transacao(clube_id: int, jogador_id: int, **sobrescritas: object) -> Transacao:
-    base = dict(
-        clube_id=clube_id,
-        jogador_id=jogador_id,
-        nome_jogador="Meia Lua",
-        tipo="COMPRA",
-        valor=Decimal("37.00"),
-        taxa=Decimal("1.85"),
-        multa=Decimal("0.00"),
-        lucro=None,
-        variacao_caixa=Decimal("-38.85"),
-        criado_em=_MOMENTO,
-    )
+    base = {
+        "clube_id": clube_id,
+        "jogador_id": jogador_id,
+        "nome_jogador": "Meia Lua",
+        "tipo": "COMPRA",
+        "valor": Decimal("37.00"),
+        "taxa": Decimal("1.85"),
+        "multa": Decimal("0.00"),
+        "lucro": None,
+        "variacao_caixa": Decimal("-38.85"),
+        "criado_em": _MOMENTO,
+    }
     base.update(sobrescritas)
     return Transacao(**base)
 

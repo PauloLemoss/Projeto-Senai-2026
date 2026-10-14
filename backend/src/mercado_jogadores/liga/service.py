@@ -113,7 +113,9 @@ class LigaService:
         self._partidas = partida_repository
         self._uot = unidade_de_trabalho
 
-    def escalar(self, clube_id: int, dados: DadosDeEscalacao, momento: datetime) -> EscalacaoDoClube:
+    def escalar(
+        self, clube_id: int, dados: DadosDeEscalacao, momento: datetime
+    ) -> EscalacaoDoClube:
         clube = self._obter_clube_ou_falhar(clube_id)
 
         titulares = []
@@ -189,11 +191,15 @@ class LigaService:
             id=partida.id,
             jogada_em=partida.jogada_em,
             mandante=LadoDaPartida(
-                club_id=mandante.id, club_name=mandante.nome, formation=mandante.formacao,
+                club_id=mandante.id,
+                club_name=mandante.nome,
+                formation=mandante.formacao,
                 goals=gols_mandante,
             ),
             visitante=LadoDaPartida(
-                club_id=visitante.id, club_name=visitante.nome, formation=visitante.formacao,
+                club_id=visitante.id,
+                club_name=visitante.nome,
+                formation=visitante.formacao,
                 goals=gols_visitante,
             ),
             duelos=duelos_gravados,
@@ -218,7 +224,9 @@ class LigaService:
         return ResultadoDaPartida(
             id=partida.id,
             jogada_em=partida.jogada_em,
-            mandante=self._lado(partida.mandante_id, partida.formacao_mandante, partida.gols_mandante),
+            mandante=self._lado(
+                partida.mandante_id, partida.formacao_mandante, partida.gols_mandante
+            ),
             visitante=self._lado(
                 partida.visitante_id, partida.formacao_visitante, partida.gols_visitante
             ),
@@ -242,7 +250,9 @@ class LigaService:
                 linhas[partida.visitante_id], partida.gols_visitante, partida.gols_mandante
             )
 
-        ordenadas = sorted(linhas.values(), key=lambda linha: normalizar_para_busca(linha.club_name))
+        ordenadas = sorted(
+            linhas.values(), key=lambda linha: normalizar_para_busca(linha.club_name)
+        )
         ordenadas = sorted(ordenadas, key=lambda linha: linha.goals_for, reverse=True)
         ordenadas = sorted(ordenadas, key=lambda linha: linha.goal_difference, reverse=True)
         ordenadas = sorted(ordenadas, key=lambda linha: linha.points, reverse=True)

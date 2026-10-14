@@ -21,25 +21,25 @@ _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
 
 def _dados_cadastro_clube(**sobrescritas: object) -> DadosCadastroClube:
-    base = dict(nome="Águias FC", sigla="AGU")
+    base = {"nome": "Águias FC", "sigla": "AGU"}
     base.update(sobrescritas)
     return DadosCadastroClube(**base)
 
 
 def _cadastrar_jogador(fake_repo: FakeJogadorRepository, **sobrescritas: object) -> Jogador:
-    dados = dict(
-        nome="Jogador Teste",
-        posicao="ATA",
-        agilidade=70,
-        idade=25,
-        pace=70,
-        shooting=70,
-        passing=70,
-        dribbling=70,
-        defending=70,
-        physical=70,
-        potential=75,
-    )
+    dados = {
+        "nome": "Jogador Teste",
+        "posicao": "ATA",
+        "agilidade": 70,
+        "idade": 25,
+        "pace": 70,
+        "shooting": 70,
+        "passing": 70,
+        "dribbling": 70,
+        "defending": 70,
+        "physical": 70,
+        "potential": 75,
+    }
     dados.update(sobrescritas)
     resultado = JogadorService(
         fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho()
@@ -108,9 +108,7 @@ class TestCadastrar:
     ) -> None:
         service = ClubeService(fake_clube_repo, fake_repo, fake_contrato_repo)
         for i in range(20):
-            service.cadastrar(
-                _dados_cadastro_clube(nome=f"Clube {i:02d} FC", sigla=f"C{i:02d}")
-            )
+            service.cadastrar(_dados_cadastro_clube(nome=f"Clube {i:02d} FC", sigla=f"C{i:02d}"))
 
         with pytest.raises(ConflitoError):
             service.cadastrar(_dados_cadastro_clube(nome="Clube Extra FC", sigla="C20"))

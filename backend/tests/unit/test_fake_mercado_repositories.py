@@ -10,31 +10,31 @@ _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
 
 def _novo_contrato(**sobrescritas: object) -> Contrato:
-    base = dict(
-        jogador_id=1,
-        clube_id=1,
-        valor_compra=Decimal("37.00"),
-        fidelidade_ate=_MOMENTO + timedelta(days=365),
-        situacao="ATIVO",
-        iniciado_em=_MOMENTO,
-    )
+    base = {
+        "jogador_id": 1,
+        "clube_id": 1,
+        "valor_compra": Decimal("37.00"),
+        "fidelidade_ate": _MOMENTO + timedelta(days=365),
+        "situacao": "ATIVO",
+        "iniciado_em": _MOMENTO,
+    }
     base.update(sobrescritas)
     return Contrato(**base)
 
 
 def _nova_transacao(**sobrescritas: object) -> Transacao:
-    base = dict(
-        clube_id=1,
-        jogador_id=1,
-        nome_jogador="Meia Lua",
-        tipo="COMPRA",
-        valor=Decimal("37.00"),
-        taxa=Decimal("1.85"),
-        multa=Decimal("0.00"),
-        lucro=None,
-        variacao_caixa=Decimal("-38.85"),
-        criado_em=_MOMENTO,
-    )
+    base = {
+        "clube_id": 1,
+        "jogador_id": 1,
+        "nome_jogador": "Meia Lua",
+        "tipo": "COMPRA",
+        "valor": Decimal("37.00"),
+        "taxa": Decimal("1.85"),
+        "multa": Decimal("0.00"),
+        "lucro": None,
+        "variacao_caixa": Decimal("-38.85"),
+        "criado_em": _MOMENTO,
+    }
     base.update(sobrescritas)
     return Transacao(**base)
 

@@ -29,8 +29,13 @@ class TestFakePartidaRepository:
         self, fake_partida_repo: FakePartidaRepository
     ) -> None:
         partida = Partida(
-            mandante_id=1, visitante_id=2, gols_mandante=1, gols_visitante=0,
-            formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+            mandante_id=1,
+            visitante_id=2,
+            gols_mandante=1,
+            gols_visitante=0,
+            formacao_mandante="2-1-1",
+            formacao_visitante="2-1-1",
+            jogada_em=_MOMENTO,
         )
 
         salva = fake_partida_repo.adicionar(partida)
@@ -43,18 +48,34 @@ class TestFakePartidaRepository:
     ) -> None:
         partida = fake_partida_repo.adicionar(
             Partida(
-                mandante_id=1, visitante_id=2, gols_mandante=0, gols_visitante=0,
-                formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+                mandante_id=1,
+                visitante_id=2,
+                gols_mandante=0,
+                gols_visitante=0,
+                formacao_mandante="2-1-1",
+                formacao_visitante="2-1-1",
+                jogada_em=_MOMENTO,
             )
         )
         for ordem in (2, 1):
             fake_partida_repo.adicionar_duelo(
                 DueloPartida(
-                    partida_id=partida.id, ordem=ordem, clube_atacante_id=1, atacante_id=1,
-                    defensor_id=2, nome_atacante="A", nome_defensor="D", posicao_atacante="ATA",
-                    posicao_defensor="GOL", condicao_atacante="APTO", condicao_defensor="APTO",
-                    atributo_ataque="shooting", atributo_defesa="defending", valor_ataque=75,
-                    valor_defesa=72, gol=True,
+                    partida_id=partida.id,
+                    ordem=ordem,
+                    clube_atacante_id=1,
+                    atacante_id=1,
+                    defensor_id=2,
+                    nome_atacante="A",
+                    nome_defensor="D",
+                    posicao_atacante="ATA",
+                    posicao_defensor="GOL",
+                    condicao_atacante="APTO",
+                    condicao_defensor="APTO",
+                    atributo_ataque="shooting",
+                    atributo_defesa="defending",
+                    valor_ataque=75,
+                    valor_defesa=72,
+                    gol=True,
                 )
             )
 
@@ -65,14 +86,24 @@ class TestFakePartidaRepository:
     def test_listar_filtra_por_clube(self, fake_partida_repo: FakePartidaRepository) -> None:
         fake_partida_repo.adicionar(
             Partida(
-                mandante_id=1, visitante_id=2, gols_mandante=1, gols_visitante=0,
-                formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+                mandante_id=1,
+                visitante_id=2,
+                gols_mandante=1,
+                gols_visitante=0,
+                formacao_mandante="2-1-1",
+                formacao_visitante="2-1-1",
+                jogada_em=_MOMENTO,
             )
         )
         fake_partida_repo.adicionar(
             Partida(
-                mandante_id=3, visitante_id=4, gols_mandante=0, gols_visitante=0,
-                formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+                mandante_id=3,
+                visitante_id=4,
+                gols_mandante=0,
+                gols_visitante=0,
+                formacao_mandante="2-1-1",
+                formacao_visitante="2-1-1",
+                jogada_em=_MOMENTO,
             )
         )
 

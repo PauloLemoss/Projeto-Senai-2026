@@ -41,7 +41,7 @@ def formacao_fecha_com_as_posicoes(formation: str, posicoes: list[str]) -> bool:
 
 def arredondar_inteiro(valor: Decimal) -> int:
     """RN20.3: arredonda para o inteiro mais próximo, com o meio arredondado para cima."""
-    return int(valor.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    return int(valor.quantize(Decimal(1), rounding=ROUND_HALF_UP))
 
 
 def aplicar_efeito_de_condicao(atributo: int, condicao: str) -> int:

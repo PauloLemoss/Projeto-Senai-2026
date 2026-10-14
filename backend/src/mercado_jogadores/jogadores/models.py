@@ -35,9 +35,7 @@ class Jogador(Base):
     idade: Mapped[int] = mapped_column(Integer, nullable=False)
     valor_base: Mapped[Decimal] = mapped_column(DECIMAL(6, 2), nullable=False)
     condicao: Mapped[str] = mapped_column(String(20), nullable=False, default="APTO")
-    clube_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("clubes.id"), nullable=True
-    )
+    clube_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("clubes.id"), nullable=True)
 
     velocidade: Mapped[int] = mapped_column(Integer, nullable=False)
     finalizacao: Mapped[int] = mapped_column(Integer, nullable=False)

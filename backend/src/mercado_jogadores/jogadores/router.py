@@ -7,7 +7,6 @@ from mercado_jogadores.core.db import get_session
 from mercado_jogadores.core.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 from mercado_jogadores.core.validation import validar_id_da_url
 from mercado_jogadores.jogadores.repository import SQLAlchemyJogadorRepository
-from mercado_jogadores.liga.repository import SQLAlchemyEscalacaoRepository
 from mercado_jogadores.jogadores.schemas import (
     CondicaoUpdate,
     JogadorCreate,
@@ -17,6 +16,7 @@ from mercado_jogadores.jogadores.schemas import (
     PlayerListResponse,
 )
 from mercado_jogadores.jogadores.service import JogadorService
+from mercado_jogadores.liga.repository import SQLAlchemyEscalacaoRepository
 
 router = APIRouter(prefix="/players", tags=["jogadores"])
 

@@ -29,28 +29,63 @@ class TestCalcularOverall:
         "atributos,posicao,esperado",
         [
             (
-                {"pace": 68, "shooting": 65, "passing": 80, "dribbling": 78, "defending": 52, "physical": 60},
+                {
+                    "pace": 68,
+                    "shooting": 65,
+                    "passing": 80,
+                    "dribbling": 78,
+                    "defending": 52,
+                    "physical": 60,
+                },
                 "MEI",
                 73,
             ),
             (
-                {"pace": 78, "shooting": 75, "passing": 73, "dribbling": 82, "defending": 48, "physical": 68},
+                {
+                    "pace": 78,
+                    "shooting": 75,
+                    "passing": 73,
+                    "dribbling": 82,
+                    "defending": 48,
+                    "physical": 68,
+                },
                 "ATA",
                 76,
             ),
             (
-                {"pace": 72, "shooting": 70, "passing": 78, "dribbling": 76, "defending": 70, "physical": 66},
+                {
+                    "pace": 72,
+                    "shooting": 70,
+                    "passing": 78,
+                    "dribbling": 76,
+                    "defending": 70,
+                    "physical": 66,
+                },
                 "LAT",
                 72,
             ),
             (
                 # soma ÷ 100 = 72,50 -> meio pra cima -> 73
-                {"pace": 50, "shooting": 90, "passing": 60, "dribbling": 40, "defending": 80, "physical": 75},
+                {
+                    "pace": 50,
+                    "shooting": 90,
+                    "passing": 60,
+                    "dribbling": 40,
+                    "defending": 80,
+                    "physical": 75,
+                },
                 "ZAG",
                 73,
             ),
             (
-                {"pace": 55, "shooting": 30, "passing": 65, "dribbling": 40, "defending": 72, "physical": 68},
+                {
+                    "pace": 55,
+                    "shooting": 30,
+                    "passing": 65,
+                    "dribbling": 40,
+                    "defending": 72,
+                    "physical": 68,
+                },
                 "GOL",
                 68,
             ),

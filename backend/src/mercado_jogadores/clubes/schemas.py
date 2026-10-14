@@ -85,9 +85,7 @@ class ClubeRead(BaseModel):
         return float(valor)
 
     @classmethod
-    def a_partir_do_resultado(
-        cls, resultado: "ClubeComPatrimonio | ClubeComElenco"
-    ) -> "ClubeRead":
+    def a_partir_do_resultado(cls, resultado: "ClubeComPatrimonio | ClubeComElenco") -> "ClubeRead":
         return cls(
             id=resultado.clube.id,
             name=resultado.clube.nome,
@@ -165,7 +163,5 @@ class ClubeComElencoRead(ClubeRead):
             cash=resultado.clube.caixa,
             squad_value=resultado.squad_value,
             net_worth=resultado.net_worth,
-            players=[
-                JogadorDoElencoRead.a_partir_do_resultado(item) for item in resultado.elenco
-            ],
+            players=[JogadorDoElencoRead.a_partir_do_resultado(item) for item in resultado.elenco],
         )

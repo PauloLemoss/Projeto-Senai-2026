@@ -68,9 +68,7 @@ class TestCriacaoDeClube:
     def test_nome_duplicado_ignorando_caixa_e_recusado(self, client: TestClient) -> None:
         _cadastrar_clube(client, name="Águias FC", acronym="AGU")
 
-        resposta = client.post(
-            "/api/v1/clubs", json={"name": "  águias   fc ", "acronym": "AGU"}
-        )
+        resposta = client.post("/api/v1/clubs", json={"name": "  águias   fc ", "acronym": "AGU"})
 
         assert resposta.status_code == 409
         assert resposta.json()["message"]
@@ -85,17 +83,33 @@ class TestCriacaoDeClube:
     def test_sigla_duplicada_e_recusada(self, client: TestClient) -> None:
         _cadastrar_clube(client, name="Águias FC", acronym="AGU")
 
-        resposta = client.post(
-            "/api/v1/clubs", json={"name": "Amigos United FC", "acronym": "AGU"}
-        )
+        resposta = client.post("/api/v1/clubs", json={"name": "Amigos United FC", "acronym": "AGU"})
 
         assert resposta.status_code == 409
         assert resposta.json()["message"]
 
     def test_limite_de_20_clubes(self, client: TestClient) -> None:
         palavras = [
-            "Alfa", "Beta", "Gama", "Delta", "Epsilon", "Zeta", "Eta", "Teta", "Iota", "Kapa",
-            "Lambda", "Mu", "Nu", "Csi", "Omicron", "Pi", "Ro", "Sigma", "Tau", "Fi",
+            "Alfa",
+            "Beta",
+            "Gama",
+            "Delta",
+            "Epsilon",
+            "Zeta",
+            "Eta",
+            "Teta",
+            "Iota",
+            "Kapa",
+            "Lambda",
+            "Mu",
+            "Nu",
+            "Csi",
+            "Omicron",
+            "Pi",
+            "Ro",
+            "Sigma",
+            "Tau",
+            "Fi",
         ]
         for palavra in palavras:
             nome = f"{palavra} FC"
@@ -126,9 +140,7 @@ class TestCriacaoDeClube:
 
 
 class TestSiglaCorrespondeAoNome:
-    def test_sigla_que_nao_comeca_pela_primeira_letra_e_recusada(
-        self, client: TestClient
-    ) -> None:
+    def test_sigla_que_nao_comeca_pela_primeira_letra_e_recusada(self, client: TestClient) -> None:
         resposta = client.post("/api/v1/clubs", json={"name": "Águias FC", "acronym": "GUI"})
         assert resposta.status_code == 400
 
@@ -152,9 +164,7 @@ class TestListagemDeClubes:
         nomes = [c["name"] for c in resposta.json()]
         assert nomes == ["Águias FC", "Zebras FC"]
 
-    def test_ordenacao_por_patrimonio_com_desempate(
-        self, client: TestClient, db_session
-    ) -> None:
+    def test_ordenacao_por_patrimonio_com_desempate(self, client: TestClient, db_session) -> None:
         rico = _cadastrar_clube(client, name="Rico FC", acronym="RIC")
         _cadastrar_clube(client, name="Pobre FC", acronym="POB")
 

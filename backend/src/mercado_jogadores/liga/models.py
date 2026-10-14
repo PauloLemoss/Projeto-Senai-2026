@@ -18,9 +18,7 @@ class Escalacao(Base):
     __tablename__ = "escalacoes"
     __table_args__ = (Index("ix_escalacoes_clube_id", "clube_id"),)
 
-    clube_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("clubes.id"), primary_key=True
-    )
+    clube_id: Mapped[int] = mapped_column(Integer, ForeignKey("clubes.id"), primary_key=True)
     jogador_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("jogadores.id"), primary_key=True, unique=True
     )
@@ -56,9 +54,7 @@ class DueloPartida(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     partida_id: Mapped[int] = mapped_column(Integer, ForeignKey("partidas.id"), nullable=False)
     ordem: Mapped[int] = mapped_column(Integer, nullable=False)
-    clube_atacante_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("clubes.id"), nullable=False
-    )
+    clube_atacante_id: Mapped[int] = mapped_column(Integer, ForeignKey("clubes.id"), nullable=False)
     atacante_id: Mapped[int] = mapped_column(Integer, ForeignKey("jogadores.id"), nullable=False)
     defensor_id: Mapped[int] = mapped_column(Integer, ForeignKey("jogadores.id"), nullable=False)
     nome_atacante: Mapped[str] = mapped_column(String(100), nullable=False)

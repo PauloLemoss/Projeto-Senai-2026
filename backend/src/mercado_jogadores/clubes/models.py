@@ -24,9 +24,7 @@ class Clube(Base):
     nome: Mapped[str] = mapped_column(String(60), nullable=False)
     nome_normalizado: Mapped[str] = mapped_column(String(60), nullable=False)
     sigla: Mapped[str] = mapped_column(String(3), nullable=False)
-    caixa: Mapped[Decimal] = mapped_column(
-        DECIMAL(10, 2), nullable=False, server_default="300.00"
-    )
+    caixa: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False, server_default="300.00")
     formacao: Mapped[str | None] = mapped_column(String(5), nullable=True)
 
     criado_em: Mapped[datetime] = mapped_column(

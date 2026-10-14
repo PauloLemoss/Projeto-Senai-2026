@@ -105,9 +105,7 @@ class TestCalcularComissaoDeVenda:
             (Decimal("-7.50"), Decimal("0.00")),
         ],
     )
-    def test_tabela_de_comissao_da_rn16(
-        self, lucro: Decimal, comissao_esperada: Decimal
-    ) -> None:
+    def test_tabela_de_comissao_da_rn16(self, lucro: Decimal, comissao_esperada: Decimal) -> None:
         assert calcular_comissao_de_venda(lucro) == comissao_esperada
 
 
@@ -115,11 +113,41 @@ class TestCalcularCreditoNaVenda:
     @pytest.mark.parametrize(
         "valor_de_compra, valor_na_venda, multa, comissao, credito_esperado",
         [
-            (Decimal("37.00"), Decimal("40.00"), Decimal("4.00"), Decimal("0.30"), Decimal("35.70")),
-            (Decimal("50.00"), Decimal("42.50"), Decimal("8.50"), Decimal("0.00"), Decimal("34.00")),
-            (Decimal("26.15"), Decimal("30.00"), Decimal("1.50"), Decimal("0.39"), Decimal("28.11")),
-            (Decimal("25.00"), Decimal("25.00"), Decimal("0.00"), Decimal("0.00"), Decimal("25.00")),
-            (Decimal("60.00"), Decimal("75.00"), Decimal("10.00"), Decimal("2.00"), Decimal("63.00")),
+            (
+                Decimal("37.00"),
+                Decimal("40.00"),
+                Decimal("4.00"),
+                Decimal("0.30"),
+                Decimal("35.70"),
+            ),
+            (
+                Decimal("50.00"),
+                Decimal("42.50"),
+                Decimal("8.50"),
+                Decimal("0.00"),
+                Decimal("34.00"),
+            ),
+            (
+                Decimal("26.15"),
+                Decimal("30.00"),
+                Decimal("1.50"),
+                Decimal("0.39"),
+                Decimal("28.11"),
+            ),
+            (
+                Decimal("25.00"),
+                Decimal("25.00"),
+                Decimal("0.00"),
+                Decimal("0.00"),
+                Decimal("25.00"),
+            ),
+            (
+                Decimal("60.00"),
+                Decimal("75.00"),
+                Decimal("10.00"),
+                Decimal("2.00"),
+                Decimal("63.00"),
+            ),
         ],
     )
     def test_tabela_de_venda_de_ponta_a_ponta_da_rn16(

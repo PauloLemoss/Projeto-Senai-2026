@@ -7,22 +7,22 @@ from tests.conftest import FakeJogadorRepository
 
 
 def _jogador(**sobrescritas: object) -> Jogador:
-    base = dict(
-        nome="Jogador Teste",
-        posicao="MEI",
-        agilidade=70,
-        idade=25,
-        valor_base=Decimal("50.00"),
-        condicao="APTO",
-        clube_id=None,
-        velocidade=70,
-        finalizacao=70,
-        passe=70,
-        drible=70,
-        defesa=70,
-        fisico=70,
-        potencial=75,
-    )
+    base = {
+        "nome": "Jogador Teste",
+        "posicao": "MEI",
+        "agilidade": 70,
+        "idade": 25,
+        "valor_base": Decimal("50.00"),
+        "condicao": "APTO",
+        "clube_id": None,
+        "velocidade": 70,
+        "finalizacao": 70,
+        "passe": 70,
+        "drible": 70,
+        "defesa": 70,
+        "fisico": 70,
+        "potencial": 75,
+    }
     base.update(sobrescritas)
     return Jogador(**base)
 

@@ -51,7 +51,7 @@ def test_nome_com_menos_de_tres_caracteres_e_recusado() -> None:
 
 
 def test_nome_com_hifen_e_ponto_e_aceito() -> None:
-    clube = ClubeCreate(**{"name": "F.C. Vento-Sul", "acronym": "FVS"})
+    clube = ClubeCreate(name="F.C. Vento-Sul", acronym="FVS")
     assert clube.name == "F.C. Vento-Sul"
 
 
@@ -152,9 +152,21 @@ def test_clube_com_elenco_read_bate_com_o_exemplo_2_2_2_do_enunciado() -> None:
 
 def test_jogador_sem_contrato_mostra_contract_nulo() -> None:
     jogador = Jogador(
-        id=2, nome="Meia Lua", posicao="MEI", agilidade=85, idade=25,
-        valor_base=Decimal("40.00"), condicao="APTO", clube_id=1, velocidade=70,
-        finalizacao=68, passe=82, drible=79, defesa=55, fisico=64, potencial=86,
+        id=2,
+        nome="Meia Lua",
+        posicao="MEI",
+        agilidade=85,
+        idade=25,
+        valor_base=Decimal("40.00"),
+        condicao="APTO",
+        clube_id=1,
+        velocidade=70,
+        finalizacao=68,
+        passe=82,
+        drible=79,
+        defesa=55,
+        fisico=64,
+        potencial=86,
     )
     calculados = JogadorComCalculados(jogador=jogador, overall=75, market_value=Decimal("40.00"))
     clube = Clube(

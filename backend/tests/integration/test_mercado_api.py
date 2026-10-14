@@ -85,9 +85,7 @@ def _definir_fidelidade_ate(db_session, jogador_id: int, fidelidade_ate: datetim
 
 
 class TestCompra:
-    def test_compra_feliz_bate_com_o_exemplo_2_3_1_do_enunciado(
-        self, client: TestClient
-    ) -> None:
+    def test_compra_feliz_bate_com_o_exemplo_2_3_1_do_enunciado(self, client: TestClient) -> None:
         jogador = _cadastrar_jogador(client)
         condicao = client.patch(
             f"/api/v1/players/{jogador['id']}/condition", json={"condition": "MAL_CONDICIONADO"}
@@ -123,9 +121,7 @@ class TestCompra:
         assert resposta.json()["fee"] == 0.00
         assert resposta.json()["value"] == 1.00
 
-    def test_custo_total_igual_ao_limite_e_aceito(
-        self, client: TestClient, db_session
-    ) -> None:
+    def test_custo_total_igual_ao_limite_e_aceito(self, client: TestClient, db_session) -> None:
         jogador = _cadastrar_jogador_fraco(client)
         _definir_valor_base(db_session, jogador["id"], Decimal("142.86"))
         clube = _cadastrar_clube(client)  # nasce com cash 300,00; limite 150,00
@@ -162,9 +158,18 @@ class TestCompra:
     def test_elenco_com_12_jogadores_recusa_a_13a_compra(self, client: TestClient) -> None:
         clube = _cadastrar_clube(client)
         nomes = [
-            "Um Titular", "Dois Titular", "Tres Titular", "Quatro Titular", "Cinco Titular",
-            "Seis Titular", "Sete Titular", "Oito Titular", "Nove Titular", "Dez Titular",
-            "Onze Titular", "Doze Titular",
+            "Um Titular",
+            "Dois Titular",
+            "Tres Titular",
+            "Quatro Titular",
+            "Cinco Titular",
+            "Seis Titular",
+            "Sete Titular",
+            "Oito Titular",
+            "Nove Titular",
+            "Dez Titular",
+            "Onze Titular",
+            "Doze Titular",
         ]
         for nome in nomes:
             titular = _cadastrar_jogador_fraco(client, name=nome)
@@ -287,9 +292,7 @@ class TestVenda:
         assert corpo["purchase_value"] == 37.00
         assert corpo["contract_status"] == "RESCINDIDO"
 
-    def test_fidelidade_ja_cumprida_nao_gera_multa(
-        self, client: TestClient, db_session
-    ) -> None:
+    def test_fidelidade_ja_cumprida_nao_gera_multa(self, client: TestClient, db_session) -> None:
         jogador = _cadastrar_jogador_fraco(client)
         clube = _cadastrar_clube(client)
         _comprar(client, jogador["id"], clube["id"])
@@ -413,9 +416,7 @@ class TestVenda:
 
 
 class TestHistoricoDeTransacoes:
-    def test_sem_filtro_traz_compra_e_venda_com_os_totais_somados(
-        self, client: TestClient
-    ) -> None:
+    def test_sem_filtro_traz_compra_e_venda_com_os_totais_somados(self, client: TestClient) -> None:
         jogador = _cadastrar_jogador(client)
         client.patch(
             f"/api/v1/players/{jogador['id']}/condition", json={"condition": "MAL_CONDICIONADO"}
@@ -454,9 +455,7 @@ class TestHistoricoDeTransacoes:
         jogador = _cadastrar_jogador_fraco(client)
         clube = _cadastrar_clube(client)
 
-        resposta = client.get(
-            f"/api/v1/clubs/{clube['id']}/transactions?player_id={jogador['id']}"
-        )
+        resposta = client.get(f"/api/v1/clubs/{clube['id']}/transactions?player_id={jogador['id']}")
 
         assert resposta.status_code == 200
         corpo = resposta.json()

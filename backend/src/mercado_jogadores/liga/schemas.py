@@ -4,7 +4,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from mercado_jogadores.core.datas import formatar_datetime_rn01
 from mercado_jogadores.core.validation import ID_MAXIMO
-from mercado_jogadores.jogadores.schemas import Condicao, InteiroDeQuery, InteiroEstrito, JogadorRead, Posicao
+from mercado_jogadores.jogadores.schemas import (
+    Condicao,
+    InteiroDeQuery,
+    InteiroEstrito,
+    JogadorRead,
+    Posicao,
+)
 from mercado_jogadores.liga.models import DueloPartida
 from mercado_jogadores.liga.repository import FiltrosDePartida
 from mercado_jogadores.liga.service import (
@@ -29,7 +35,9 @@ class LineupUpdate(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     formation: Formacao
-    player_ids: list[IdDeJogador] = Field(min_length=TITULARES_POR_ESCALACAO, max_length=TITULARES_POR_ESCALACAO)
+    player_ids: list[IdDeJogador] = Field(
+        min_length=TITULARES_POR_ESCALACAO, max_length=TITULARES_POR_ESCALACAO
+    )
 
     @field_validator("player_ids")
     @classmethod

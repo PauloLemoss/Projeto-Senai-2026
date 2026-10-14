@@ -11,7 +11,11 @@ from pydantic import (
     model_validator,
 )
 
-from mercado_jogadores.core.datas import FUSO_BRASILIA, formatar_datetime_rn01, parsear_datetime_rn01
+from mercado_jogadores.core.datas import (
+    FUSO_BRASILIA,
+    formatar_datetime_rn01,
+    parsear_datetime_rn01,
+)
 from mercado_jogadores.jogadores.schemas import InteiroDeQuery
 from mercado_jogadores.mercado.models import Transacao
 from mercado_jogadores.mercado.repository import FiltrosDeTransacao

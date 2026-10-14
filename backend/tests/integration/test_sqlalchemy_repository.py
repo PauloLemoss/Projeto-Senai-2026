@@ -9,27 +9,27 @@ from mercado_jogadores.jogadores.repository import FiltrosSql, SQLAlchemyJogador
 
 
 def _novo_clube(**sobrescritas: object) -> Clube:
-    base = dict(nome="Clube Teste", nome_normalizado="clube teste", sigla="CLT")
+    base = {"nome": "Clube Teste", "nome_normalizado": "clube teste", "sigla": "CLT"}
     base.update(sobrescritas)
     return Clube(**base)
 
 
 def _novo_jogador(**sobrescritas: object) -> Jogador:
-    base = dict(
-        nome="Teste Integração",
-        posicao="ATA",
-        agilidade=70,
-        idade=25,
-        valor_base=Decimal("50.00"),
-        condicao="APTO",
-        velocidade=70,
-        finalizacao=70,
-        passe=70,
-        drible=70,
-        defesa=70,
-        fisico=70,
-        potencial=75,
-    )
+    base = {
+        "nome": "Teste Integração",
+        "posicao": "ATA",
+        "agilidade": 70,
+        "idade": 25,
+        "valor_base": Decimal("50.00"),
+        "condicao": "APTO",
+        "velocidade": 70,
+        "finalizacao": 70,
+        "passe": 70,
+        "drible": 70,
+        "defesa": 70,
+        "fisico": 70,
+        "potencial": 75,
+    }
     base.update(sobrescritas)
     return Jogador(**base)
 

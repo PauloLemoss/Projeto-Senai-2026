@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from mercado_jogadores.clubes.models import Clube
-from mercado_jogadores.core.datas import FUSO_BRASILIA, formatar_datetime_rn01
+from mercado_jogadores.core.datas import FUSO_BRASILIA
 from mercado_jogadores.mercado.models import Contrato, Transacao
 from mercado_jogadores.mercado.schemas import (
     BuyRead,
@@ -71,7 +71,10 @@ class TestBuyReadESellRead:
             iniciado_em=datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA),
         )
         clube = Clube(
-            id=1, nome="Águias FC", nome_normalizado="águias fc", sigla="AGU",
+            id=1,
+            nome="Águias FC",
+            nome_normalizado="águias fc",
+            sigla="AGU",
             caixa=Decimal("261.15"),
         )
         resultado = ResultadoDaCompra(transacao=transacao, contrato=contrato, clube=clube)
@@ -122,11 +125,17 @@ class TestBuyReadESellRead:
             encerrado_em=datetime(2026, 11, 5, 16, 40, tzinfo=FUSO_BRASILIA),
         )
         clube = Clube(
-            id=1, nome="Águias FC", nome_normalizado="águias fc", sigla="AGU",
+            id=1,
+            nome="Águias FC",
+            nome_normalizado="águias fc",
+            sigla="AGU",
             caixa=Decimal("296.85"),
         )
         resultado = ResultadoDaVenda(
-            transacao=transacao, contrato=contrato, clube=clube, dias_restantes=117,
+            transacao=transacao,
+            contrato=contrato,
+            clube=clube,
+            dias_restantes=117,
             percentual_de_multa=10,
         )
 

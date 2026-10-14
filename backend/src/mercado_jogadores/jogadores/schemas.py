@@ -202,9 +202,7 @@ class JogadorRead(BaseModel):
 _INTEIRO_DE_QUERY = re.compile(r"^[1-9][0-9]*$")
 _DECIMAL_DE_QUERY = re.compile(r"^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$")
 CampoDeOrdenacao = Literal["name", "value_asc", "value_desc", "age_asc", "age_desc", "position"]
-_SORT_VALIDOS = frozenset(
-    ("name", "value_asc", "value_desc", "age_asc", "age_desc", "position")
-)
+_SORT_VALIDOS = frozenset(("name", "value_asc", "value_desc", "age_asc", "age_desc", "position"))
 
 
 def _campo_de_sort(token: str) -> str:

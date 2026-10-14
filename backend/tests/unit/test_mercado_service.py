@@ -27,19 +27,19 @@ _FIDELIDADE_ATE = _MOMENTO + timedelta(days=365)
 def _cadastrar_jogador_com_valor_de_mercado(
     fake_repo: FakeJogadorRepository, valor: Decimal, **sobrescritas: object
 ) -> Jogador:
-    dados = dict(
-        nome="Meia Lua",
-        posicao="MEI",
-        agilidade=85,
-        idade=25,
-        pace=70,
-        shooting=68,
-        passing=82,
-        dribbling=79,
-        defending=55,
-        physical=64,
-        potential=86,
-    )
+    dados = {
+        "nome": "Meia Lua",
+        "posicao": "MEI",
+        "agilidade": 85,
+        "idade": 25,
+        "pace": 70,
+        "shooting": 68,
+        "passing": 82,
+        "dribbling": 79,
+        "defending": 55,
+        "physical": 64,
+        "potential": 86,
+    }
     dados.update(sobrescritas)
     resultado = JogadorService(
         fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho()
@@ -53,13 +53,18 @@ def _cadastrar_jogador_com_valor_de_mercado(
 
 
 def _novo_clube(fake_clube_repo: FakeClubeRepository, **sobrescritas: object) -> Clube:
-    dados = dict(nome="Águias FC", nome_normalizado="águias fc", sigla="AGU", caixa=Decimal("300.00"))
+    dados = {
+        "nome": "Águias FC",
+        "nome_normalizado": "águias fc",
+        "sigla": "AGU",
+        "caixa": Decimal("300.00"),
+    }
     dados.update(sobrescritas)
     return fake_clube_repo.salvar(Clube(**dados))
 
 
 def _dados_de_compra(club_id: int, **sobrescritas: object) -> DadosDeCompra:
-    dados = dict(club_id=club_id, loyalty_until=_FIDELIDADE_ATE)
+    dados = {"club_id": club_id, "loyalty_until": _FIDELIDADE_ATE}
     dados.update(sobrescritas)
     return DadosDeCompra(**dados)
 
@@ -78,8 +83,12 @@ def _comprar_jogador(
     jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, valor_de_mercado)
     clube = _novo_clube(fake_clube_repo, caixa=caixa_do_clube)
     service = MercadoService(
-        fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-        fake_escalacao_repo, fake_unidade_de_trabalho,
+        fake_repo,
+        fake_clube_repo,
+        fake_contrato_repo,
+        fake_transacao_repo,
+        fake_escalacao_repo,
+        fake_unidade_de_trabalho,
     )
     service.comprar(
         jogador.id, DadosDeCompra(club_id=clube.id, loyalty_until=fidelidade_ate), _MOMENTO
@@ -100,8 +109,12 @@ class TestComprar:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("28.00"))
         clube = _novo_clube(fake_clube_repo, caixa=Decimal("300.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         resultado = service.comprar(jogador.id, _dados_de_compra(clube.id), _MOMENTO)
@@ -123,8 +136,12 @@ class TestComprar:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("47.62"))
         clube = _novo_clube(fake_clube_repo, caixa=Decimal("100.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         service.comprar(jogador.id, _dados_de_compra(clube.id), _MOMENTO)
@@ -143,8 +160,12 @@ class TestComprar:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("48.00"))
         clube = _novo_clube(fake_clube_repo, caixa=Decimal("100.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(ConflitoError):
@@ -167,10 +188,16 @@ class TestComprar:
         clube = _novo_clube(fake_clube_repo)
         jogador.clube_id = clube.id
         fake_repo.salvar(jogador)
-        outro_clube = _novo_clube(fake_clube_repo, nome="Leões FC", nome_normalizado="leões fc", sigla="LEO")
+        outro_clube = _novo_clube(
+            fake_clube_repo, nome="Leões FC", nome_normalizado="leões fc", sigla="LEO"
+        )
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(ConflitoError):
@@ -192,8 +219,12 @@ class TestComprar:
             fake_repo.salvar(titular)
         decimo_terceiro = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("10.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(ConflitoError):
@@ -227,8 +258,12 @@ class TestComprar:
             )
         )
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(ConflitoError):
@@ -245,7 +280,9 @@ class TestComprar:
     ) -> None:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("28.00"))
         clube_a = _novo_clube(fake_clube_repo)
-        clube_b = _novo_clube(fake_clube_repo, nome="Leões FC", nome_normalizado="leões fc", sigla="LEO")
+        clube_b = _novo_clube(
+            fake_clube_repo, nome="Leões FC", nome_normalizado="leões fc", sigla="LEO"
+        )
         fake_transacao_repo.adicionar(
             Transacao(
                 clube_id=clube_a.id,
@@ -261,8 +298,12 @@ class TestComprar:
             )
         )
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         resultado = service.comprar(jogador.id, _dados_de_compra(clube_b.id), _MOMENTO)
@@ -281,8 +322,12 @@ class TestComprar:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(NaoEncontradoError):
@@ -299,8 +344,12 @@ class TestComprar:
     ) -> None:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("28.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(NaoEncontradoError):
@@ -320,9 +369,15 @@ class TestVender:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("40.00"), _MOMENTO_VENDA - timedelta(days=1),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("40.00"),
+            _MOMENTO_VENDA - timedelta(days=1),
         )
 
         resultado = service.vender(jogador.id, _MOMENTO_VENDA)
@@ -342,8 +397,13 @@ class TestVender:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("40.00"),
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("40.00"),
             _MOMENTO_VENDA - timedelta(days=1),
         )
         fake_escalacao_repo.substituir_escalacao_do_clube(clube.id, [jogador.id], _MOMENTO_VENDA)
@@ -361,9 +421,15 @@ class TestVender:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("40.00"), _MOMENTO_VENDA + timedelta(days=30),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("40.00"),
+            _MOMENTO_VENDA + timedelta(days=30),
         )
 
         resultado = service.vender(jogador.id, _MOMENTO_VENDA)
@@ -382,9 +448,14 @@ class TestVender:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("40.00"),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("40.00"),
             _MOMENTO_VENDA + timedelta(days=30, minutes=1),
         )
 
@@ -403,9 +474,14 @@ class TestVender:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("40.00"),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("40.00"),
             _MOMENTO_VENDA + timedelta(days=180, minutes=1),
         )
 
@@ -424,9 +500,14 @@ class TestVender:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("75.00"),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("75.00"),
             _MOMENTO_VENDA + timedelta(days=200),
         )
 
@@ -448,8 +529,17 @@ class TestVender:
             fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho
         ).cadastrar(
             DadosCadastroJogador(
-                nome="Meia Lua", posicao="MEI", agilidade=85, idade=25, pace=70, shooting=68,
-                passing=82, dribbling=79, defending=55, physical=64, potential=86,
+                nome="Meia Lua",
+                posicao="MEI",
+                agilidade=85,
+                idade=25,
+                pace=70,
+                shooting=68,
+                passing=82,
+                dribbling=79,
+                defending=55,
+                physical=64,
+                potential=86,
             )
         )
         jogador = resultado_cadastro.jogador
@@ -460,13 +550,18 @@ class TestVender:
 
         clube = _novo_clube(fake_clube_repo, caixa=Decimal("300.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
         momento_compra = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
         fidelidade_ate = datetime(2027, 3, 2, 10, 15, tzinfo=FUSO_BRASILIA)
         compra = service.comprar(
-            jogador.id, DadosDeCompra(club_id=clube.id, loyalty_until=fidelidade_ate),
+            jogador.id,
+            DadosDeCompra(club_id=clube.id, loyalty_until=fidelidade_ate),
             momento_compra,
         )
         assert compra.transacao.valor == Decimal("37.00")
@@ -498,8 +593,12 @@ class TestVender:
     ) -> None:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("40.00"))
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(ConflitoError):
@@ -515,8 +614,12 @@ class TestVender:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(NaoEncontradoError):
@@ -533,9 +636,15 @@ class TestComissaoProgressivaNaVenda:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("20.00"), _MOMENTO_VENDA - timedelta(days=1),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("20.00"),
+            _MOMENTO_VENDA - timedelta(days=1),
         )
         jogador.valor_base = Decimal("23.00")
         fake_repo.salvar(jogador)
@@ -555,9 +664,15 @@ class TestComissaoProgressivaNaVenda:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("20.00"), _MOMENTO_VENDA - timedelta(days=1),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("20.00"),
+            _MOMENTO_VENDA - timedelta(days=1),
         )
         jogador.valor_base = Decimal("35.00")
         fake_repo.salvar(jogador)
@@ -576,9 +691,15 @@ class TestComissaoProgressivaNaVenda:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_jogador(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho, Decimal("30.00"), _MOMENTO_VENDA - timedelta(days=1),
+        jogador, _clube, service = _comprar_jogador(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
+            Decimal("30.00"),
+            _MOMENTO_VENDA - timedelta(days=1),
         )
         jogador.valor_base = Decimal("20.00")
         fake_repo.salvar(jogador)
@@ -604,8 +725,17 @@ def _comprar_e_vender_exemplo_do_enunciado(
         fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho
     ).cadastrar(
         DadosCadastroJogador(
-            nome="Meia Lua", posicao="MEI", agilidade=85, idade=25, pace=70, shooting=68,
-            passing=82, dribbling=79, defending=55, physical=64, potential=86,
+            nome="Meia Lua",
+            posicao="MEI",
+            agilidade=85,
+            idade=25,
+            pace=70,
+            shooting=68,
+            passing=82,
+            dribbling=79,
+            defending=55,
+            physical=64,
+            potential=86,
         )
     )
     jogador = resultado_cadastro.jogador
@@ -614,8 +744,12 @@ def _comprar_e_vender_exemplo_do_enunciado(
 
     clube = _novo_clube(fake_clube_repo, caixa=Decimal("300.00"))
     service = MercadoService(
-        fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-        fake_escalacao_repo, fake_unidade_de_trabalho,
+        fake_repo,
+        fake_clube_repo,
+        fake_contrato_repo,
+        fake_transacao_repo,
+        fake_escalacao_repo,
+        fake_unidade_de_trabalho,
     )
     momento_compra = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
     fidelidade_ate = datetime(2027, 3, 2, 10, 15, tzinfo=FUSO_BRASILIA)
@@ -640,9 +774,13 @@ class TestHistorico:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+        _jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         historico = service.historico(clube.id, FiltrosDeTransacao())
@@ -663,9 +801,13 @@ class TestHistorico:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+        _jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         historico = service.historico(clube.id, FiltrosDeTransacao(tipos=["VENDA"]))
@@ -685,16 +827,22 @@ class TestHistorico:
         jogador = _cadastrar_jogador_com_valor_de_mercado(fake_repo, Decimal("40.00"))
         clube = _novo_clube(fake_clube_repo)
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         historico = service.historico(clube.id, FiltrosDeTransacao(jogador_id=jogador.id))
 
         assert historico.transacoes == []
         assert historico.resumo == ResumoDeTransacoes(
-            total_spent=Decimal("0.00"), total_received=Decimal("0.00"),
-            total_fees=Decimal("0.00"), total_penalties=Decimal("0.00"),
+            total_spent=Decimal("0.00"),
+            total_received=Decimal("0.00"),
+            total_fees=Decimal("0.00"),
+            total_penalties=Decimal("0.00"),
             total_profit=Decimal("0.00"),
         )
 
@@ -709,8 +857,12 @@ class TestHistorico:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(NaoEncontradoError):
@@ -726,8 +878,12 @@ class TestHistorico:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         with pytest.raises(NaoEncontradoError):
@@ -742,9 +898,13 @@ class TestHistorico:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+        _jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         historico = service.historico(clube.id, FiltrosDeTransacao())
@@ -762,8 +922,12 @@ class TestHistorico:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         jogador.excluido_em = _MOMENTO_VENDA
@@ -785,9 +949,13 @@ class TestExportarCsv:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+        _jogador, clube, service = _comprar_e_vender_exemplo_do_enunciado(
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         csv_gerado = service.exportar_csv(clube.id, FiltrosDeTransacao())
@@ -810,8 +978,12 @@ class TestExportarCsv:
     ) -> None:
         clube = _novo_clube(fake_clube_repo)
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         csv_gerado = service.exportar_csv(clube.id, FiltrosDeTransacao())
@@ -845,8 +1017,12 @@ class TestExportarCsv:
             )
         )
         service = MercadoService(
-            fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-            fake_escalacao_repo, fake_unidade_de_trabalho,
+            fake_repo,
+            fake_clube_repo,
+            fake_contrato_repo,
+            fake_transacao_repo,
+            fake_escalacao_repo,
+            fake_unidade_de_trabalho,
         )
 
         csv_gerado = service.exportar_csv(clube.id, FiltrosDeTransacao())
@@ -879,8 +1055,12 @@ def test_falha_ao_confirmar_aciona_o_rollback_e_propaga_o_erro(
     clube = _novo_clube(fake_clube_repo)
     uot_que_falha = _UnidadeDeTrabalhoQueFalhaAoConfirmar()
     service = MercadoService(
-        fake_repo, fake_clube_repo, fake_contrato_repo, fake_transacao_repo,
-        fake_escalacao_repo, uot_que_falha,
+        fake_repo,
+        fake_clube_repo,
+        fake_contrato_repo,
+        fake_transacao_repo,
+        fake_escalacao_repo,
+        uot_que_falha,
     )
 
     with pytest.raises(RuntimeError):

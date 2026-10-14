@@ -48,9 +48,7 @@ class FakeJogadorRepository:
         if filtros.condition is not None:
             resultado = [j for j in resultado if j.condicao == filtros.condition]
         if filtros.free is not None:
-            resultado = [
-                j for j in resultado if (j.clube_id is None) == filtros.free
-            ]
+            resultado = [j for j in resultado if (j.clube_id is None) == filtros.free]
         if filtros.club_id is not None:
             resultado = [j for j in resultado if j.clube_id == filtros.club_id]
         if filtros.min_age is not None:

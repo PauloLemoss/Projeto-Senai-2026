@@ -5,7 +5,7 @@ from mercado_jogadores.clubes.repository import SQLAlchemyClubeRepository
 
 
 def _novo_clube(**sobrescritas: object) -> Clube:
-    base = dict(nome="Águias FC", nome_normalizado="águias fc", sigla="AGU")
+    base = {"nome": "Águias FC", "nome_normalizado": "águias fc", "sigla": "AGU"}
     base.update(sobrescritas)
     return Clube(**base)
 

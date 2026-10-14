@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -45,6 +45,6 @@ class TestFormatarDatetimeRn01:
         assert formatar_datetime_rn01(momento) == "2027-03-02T10:15:00-03:00"
 
     def test_converte_de_outro_fuso_para_brasilia(self) -> None:
-        momento_utc = datetime(2027, 3, 2, 13, 15, 0, tzinfo=timezone.utc)
+        momento_utc = datetime(2027, 3, 2, 13, 15, 0, tzinfo=UTC)
 
         assert formatar_datetime_rn01(momento_utc) == "2027-03-02T10:15:00-03:00"

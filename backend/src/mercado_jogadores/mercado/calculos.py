@@ -65,11 +65,11 @@ def calcular_multa(valor_de_mercado: Decimal, percentual: int) -> Decimal:
 def calcular_comissao_de_venda(lucro: Decimal) -> Decimal:
     """RN16.3: comissão progressiva, só quando o lucro é maior que zero: 10% sobre a parte até
     10,00 de lucro, mais 20% sobre a parte acima, somadas e arredondadas uma única vez."""
-    if lucro <= Decimal("0"):
+    if lucro <= Decimal(0):
         return Decimal("0.00")
 
     parte_ate_dez = min(lucro, LIMITE_PRIMEIRA_FAIXA_DE_COMISSAO)
-    parte_acima_de_dez = max(lucro - LIMITE_PRIMEIRA_FAIXA_DE_COMISSAO, Decimal("0"))
+    parte_acima_de_dez = max(lucro - LIMITE_PRIMEIRA_FAIXA_DE_COMISSAO, Decimal(0))
     comissao = (
         parte_ate_dez * PERCENTUAL_PRIMEIRA_FAIXA_DE_COMISSAO
         + parte_acima_de_dez * PERCENTUAL_SEGUNDA_FAIXA_DE_COMISSAO

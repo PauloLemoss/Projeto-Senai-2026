@@ -17,17 +17,32 @@ _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 
 
 def _novo_clube(**sobrescritas: object) -> Clube:
-    base = dict(nome="Águias FC", nome_normalizado="águias fc", sigla="AGU", caixa=Decimal("300.00"))
+    base = {
+        "nome": "Águias FC",
+        "nome_normalizado": "águias fc",
+        "sigla": "AGU",
+        "caixa": Decimal("300.00"),
+    }
     base.update(sobrescritas)
     return Clube(**base)
 
 
 def _novo_jogador(**sobrescritas: object) -> Jogador:
-    base = dict(
-        nome="Meia Lua", posicao="MEI", agilidade=85, idade=25, valor_base=Decimal("40.00"),
-        condicao="APTO", velocidade=70, finalizacao=68, passe=82, drible=79, defesa=55,
-        fisico=64, potencial=86,
-    )
+    base = {
+        "nome": "Meia Lua",
+        "posicao": "MEI",
+        "agilidade": 85,
+        "idade": 25,
+        "valor_base": Decimal("40.00"),
+        "condicao": "APTO",
+        "velocidade": 70,
+        "finalizacao": 68,
+        "passe": 82,
+        "drible": 79,
+        "defesa": 55,
+        "fisico": 64,
+        "potencial": 86,
+    }
     base.update(sobrescritas)
     return Jogador(**base)
 
@@ -84,8 +99,12 @@ def test_adicionar_obter_e_listar_duelos_de_uma_partida(db_session: Session) -> 
     repo = SQLAlchemyPartidaRepository(db_session)
     partida = repo.adicionar(
         Partida(
-            mandante_id=mandante.id, visitante_id=visitante.id, gols_mandante=1,
-            gols_visitante=2, formacao_mandante="2-1-1", formacao_visitante="2-1-1",
+            mandante_id=mandante.id,
+            visitante_id=visitante.id,
+            gols_mandante=1,
+            gols_visitante=2,
+            formacao_mandante="2-1-1",
+            formacao_visitante="2-1-1",
             jogada_em=_MOMENTO,
         )
     )
@@ -94,13 +113,22 @@ def test_adicionar_obter_e_listar_duelos_de_uma_partida(db_session: Session) -> 
     for ordem in range(1, 7):
         repo.adicionar_duelo(
             DueloPartida(
-                partida_id=partida.id, ordem=ordem,
+                partida_id=partida.id,
+                ordem=ordem,
                 clube_atacante_id=mandante.id if ordem <= 3 else visitante.id,
-                atacante_id=jogador.id, defensor_id=jogador.id, nome_atacante="A",
+                atacante_id=jogador.id,
+                defensor_id=jogador.id,
+                nome_atacante="A",
                 nome_defensor="D",
-                posicao_atacante="ATA", posicao_defensor="GOL", condicao_atacante="APTO",
-                condicao_defensor="APTO", atributo_ataque="shooting", atributo_defesa="defending",
-                valor_ataque=75, valor_defesa=72, gol=(ordem in (1, 4, 6)),
+                posicao_atacante="ATA",
+                posicao_defensor="GOL",
+                condicao_atacante="APTO",
+                condicao_defensor="APTO",
+                atributo_ataque="shooting",
+                atributo_defesa="defending",
+                valor_ataque=75,
+                valor_defesa=72,
+                gol=(ordem in (1, 4, 6)),
             )
         )
     db_session.commit()
@@ -129,14 +157,24 @@ def test_listar_filtra_por_clube_e_ordena_mais_recente_primeiro(db_session: Sess
     repo = SQLAlchemyPartidaRepository(db_session)
     p1 = repo.adicionar(
         Partida(
-            mandante_id=clube_a.id, visitante_id=clube_b.id, gols_mandante=1, gols_visitante=0,
-            formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+            mandante_id=clube_a.id,
+            visitante_id=clube_b.id,
+            gols_mandante=1,
+            gols_visitante=0,
+            formacao_mandante="2-1-1",
+            formacao_visitante="2-1-1",
+            jogada_em=_MOMENTO,
         )
     )
     p2 = repo.adicionar(
         Partida(
-            mandante_id=clube_b.id, visitante_id=clube_c.id, gols_mandante=0, gols_visitante=0,
-            formacao_mandante="2-1-1", formacao_visitante="2-1-1", jogada_em=_MOMENTO,
+            mandante_id=clube_b.id,
+            visitante_id=clube_c.id,
+            gols_mandante=0,
+            gols_visitante=0,
+            formacao_mandante="2-1-1",
+            formacao_visitante="2-1-1",
+            jogada_em=_MOMENTO,
         )
     )
     db_session.commit()

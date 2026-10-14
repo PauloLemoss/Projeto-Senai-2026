@@ -113,9 +113,7 @@ class ClubeService:
         jogadores = self._jogadores.listar(FiltrosSql(club_id=clube_id))
         return [calcular_indicadores(j) for j in jogadores]
 
-    def _ordenar_elenco(
-        self, elenco: list[JogadorComCalculados]
-    ) -> list[JogadorComCalculados]:
+    def _ordenar_elenco(self, elenco: list[JogadorComCalculados]) -> list[JogadorComCalculados]:
         elenco = sorted(elenco, key=lambda item: item.jogador.id)
         elenco = sorted(elenco, key=lambda item: normalizar_para_busca(item.jogador.nome))
         elenco = sorted(elenco, key=lambda item: ORDEM_DAS_POSICOES.index(item.jogador.posicao))

@@ -1,16 +1,14 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
+from mercado_jogadores.clubes.models import Clube  # noqa: F401 (registra no Base.metadata)
 from mercado_jogadores.core.config import get_settings
 from mercado_jogadores.core.db import Base
-from mercado_jogadores.clubes.models import Clube  # noqa: F401 (registra no Base.metadata)
 from mercado_jogadores.jogadores.models import Jogador  # noqa: F401 (registra no Base.metadata)
+from mercado_jogadores.liga.models import DueloPartida, Escalacao, Partida  # noqa: F401
 from mercado_jogadores.mercado.models import Contrato, Transacao  # noqa: F401
-from mercado_jogadores.liga.models import Escalacao, Partida, DueloPartida  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -69,9 +67,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

@@ -55,11 +55,22 @@ def _comprar(client: TestClient, jogador_id: int, club_id: int) -> None:
 
 
 def _jogador_do_exemplo(nome: str, posicao: str, **atributos: int) -> dict:
-    base = dict(pace=50, shooting=50, passing=50, dribbling=50, defending=50, physical=50)
+    base = {
+        "pace": 50,
+        "shooting": 50,
+        "passing": 50,
+        "dribbling": 50,
+        "defending": 50,
+        "physical": 50,
+    }
     base.update(atributos)
     return {
-        "name": nome, "position": posicao, "agility": 70, "age": 25,
-        "potential": max(base.values()), **base,
+        "name": nome,
+        "position": posicao,
+        "agility": 70,
+        "age": 25,
+        "potential": max(base.values()),
+        **base,
     }
 
 
@@ -79,7 +90,9 @@ _ROSTER_DELTA = [
 ]
 
 
-def _escalar_roster(client: TestClient, nome_do_clube: str, acronimo: str, roster: list[dict]) -> tuple[dict, list[dict]]:
+def _escalar_roster(
+    client: TestClient, nome_do_clube: str, acronimo: str, roster: list[dict]
+) -> tuple[dict, list[dict]]:
     """Cadastra um clube e o `roster` dado (RN20), compra todos para o clube e escala no
     `2-1-1`. Devolve o clube e os jogadores cadastrados, na ordem do `roster`."""
     clube = _cadastrar_clube(client, name=nome_do_clube, acronym=acronimo)
@@ -99,7 +112,9 @@ def _escalar_roster(client: TestClient, nome_do_clube: str, acronimo: str, roste
     return clube, jogadores
 
 
-def _escalar_clube_2_1_1(client: TestClient, nome_do_clube: str, acronimo: str) -> tuple[dict, list[dict]]:
+def _escalar_clube_2_1_1(
+    client: TestClient, nome_do_clube: str, acronimo: str
+) -> tuple[dict, list[dict]]:
     """Cadastra um clube e 5 titulares (GOL, ZAG, LAT, MEI, ATA), compra todos para o clube e
     escala no `2-1-1`. Devolve o clube e os jogadores cadastrados, na ordem dos titulares."""
     clube = _cadastrar_clube(client, name=nome_do_clube, acronym=acronimo)
@@ -186,8 +201,11 @@ class TestEscalacao:
         clube = _cadastrar_clube(client)
         jogadores = []
         for nome, posicao in [
-            ("Jogador Um", "GOL"), ("Jogador Dois", "GOL"), ("Jogador Tres", "ZAG"),
-            ("Jogador Quatro", "LAT"), ("Jogador Cinco", "ATA"),
+            ("Jogador Um", "GOL"),
+            ("Jogador Dois", "GOL"),
+            ("Jogador Tres", "ZAG"),
+            ("Jogador Quatro", "LAT"),
+            ("Jogador Cinco", "ATA"),
         ]:
             jogador = _cadastrar_jogador(client, name=nome, position=posicao)
             _comprar(client, jogador["id"], clube["id"])
@@ -252,11 +270,14 @@ class TestConsultarEscalacao:
 
         assert resposta.status_code == 200, resposta.text
         assert resposta.json() == {
-            "club_id": clube["id"], "formation": None, "complete": False, "players": [],
+            "club_id": clube["id"],
+            "formation": None,
+            "complete": False,
+            "players": [],
         }
 
     def test_clube_com_escalacao_completa(self, client: TestClient) -> None:
-        clube, jogadores = _escalar_clube_2_1_1(client, "Delta FC", "DEL")
+        clube, _jogadores = _escalar_clube_2_1_1(client, "Delta FC", "DEL")
 
         resposta = client.get(f"/api/v1/clubs/{clube['id']}/lineup")
 
@@ -295,10 +316,20 @@ class TestPartida:
         for ordem, duelo in enumerate(corpo["duels"], start=1):
             assert duelo["order"] == ordem
             assert set(duelo["attacker"]) == {
-                "player_id", "player_name", "position", "condition", "attribute", "value",
+                "player_id",
+                "player_name",
+                "position",
+                "condition",
+                "attribute",
+                "value",
             }
             assert set(duelo["defender"]) == {
-                "player_id", "player_name", "position", "condition", "attribute", "value",
+                "player_id",
+                "player_name",
+                "position",
+                "condition",
+                "attribute",
+                "value",
             }
             assert isinstance(duelo["goal"], bool)
 
@@ -350,8 +381,7 @@ class TestHistoricoDetalheEClassificacao:
         filtrado = client.get(f"/api/v1/matches?club_id={mandante['id']}")
         assert filtrado.status_code == 200, filtrado.text
         assert all(
-            mandante["id"] in (p["home"]["club_id"], p["away"]["club_id"])
-            for p in filtrado.json()
+            mandante["id"] in (p["home"]["club_id"], p["away"]["club_id"]) for p in filtrado.json()
         )
 
         clube_inexistente = client.get("/api/v1/matches?club_id=999999")
@@ -364,9 +394,7 @@ class TestHistoricoDetalheEClassificacao:
         partida_inexistente = client.get("/api/v1/matches/999999")
         assert partida_inexistente.status_code == 404, partida_inexistente.text
 
-    def test_classificacao_traz_todos_os_clubes_inclusive_zerados(
-        self, client: TestClient
-    ) -> None:
+    def test_classificacao_traz_todos_os_clubes_inclusive_zerados(self, client: TestClient) -> None:
         mandante, _ = _escalar_clube_2_1_1(client, "Águias FC", "AGU")
         visitante, _ = _escalar_clube_2_1_1(client, "Delta FC", "DEL")
         sem_jogar = _cadastrar_clube(client, name="Gama SC", acronym="GSC")
@@ -382,9 +410,13 @@ class TestHistoricoDetalheEClassificacao:
         assert len(corpo) == 3
         linha_sem_jogar = next(l for l in corpo if l["club_id"] == sem_jogar["id"])
         assert (
-            linha_sem_jogar["played"], linha_sem_jogar["wins"], linha_sem_jogar["draws"],
-            linha_sem_jogar["losses"], linha_sem_jogar["goals_for"],
-            linha_sem_jogar["goals_against"], linha_sem_jogar["goal_difference"],
+            linha_sem_jogar["played"],
+            linha_sem_jogar["wins"],
+            linha_sem_jogar["draws"],
+            linha_sem_jogar["losses"],
+            linha_sem_jogar["goals_for"],
+            linha_sem_jogar["goals_against"],
+            linha_sem_jogar["goal_difference"],
             linha_sem_jogar["points"],
         ) == (0, 0, 0, 0, 0, 0, 0, 0)
         posicoes = [l["position"] for l in corpo]
@@ -482,8 +514,12 @@ class TestPartidaDePontaAPontaComOExemploDaRN20:
         assert corpo["result"] == "VISITANTE"
         tabela = [
             (
-                d["order"], d["attacking_club_id"], d["attacker"]["player_name"],
-                d["attacker"]["value"], d["defender"]["player_name"], d["defender"]["value"],
+                d["order"],
+                d["attacking_club_id"],
+                d["attacker"]["player_name"],
+                d["attacker"]["value"],
+                d["defender"]["player_name"],
+                d["defender"]["value"],
                 d["goal"],
             )
             for d in corpo["duels"]
@@ -542,7 +578,12 @@ class TestClassificacaoComOExemploDoEnunciado:
         corpo = resposta.json()
         assert len(corpo) == 6
         assert {l["club_id"] for l in corpo} == {
-            aguias["id"], delta["id"], gama["id"], epsilon["id"], mangue["id"], tubaroes["id"],
+            aguias["id"],
+            delta["id"],
+            gama["id"],
+            epsilon["id"],
+            mangue["id"],
+            tubaroes["id"],
         }
         linha_mangue = next(l for l in corpo if l["club_id"] == mangue["id"])
         linha_tubaroes = next(l for l in corpo if l["club_id"] == tubaroes["id"])

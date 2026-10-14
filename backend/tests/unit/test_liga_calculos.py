@@ -30,26 +30,18 @@ class TestFormacaoFechaComAsPosicoes:
 
     def test_goleiro_a_mais_e_recusado(self) -> None:
         # 2-1-1 com 2 goleiros em vez de 1
-        assert (
-            formacao_fecha_com_as_posicoes("2-1-1", ["GOL", "GOL", "LAT", "MEI", "ATA"]) is False
-        )
+        assert formacao_fecha_com_as_posicoes("2-1-1", ["GOL", "GOL", "LAT", "MEI", "ATA"]) is False
 
     def test_sem_goleiro_e_recusado(self) -> None:
-        assert (
-            formacao_fecha_com_as_posicoes("2-1-1", ["ZAG", "ZAG", "LAT", "MEI", "ATA"]) is False
-        )
+        assert formacao_fecha_com_as_posicoes("2-1-1", ["ZAG", "ZAG", "LAT", "MEI", "ATA"]) is False
 
     def test_setor_a_mais_e_recusado(self) -> None:
         # 2-1-1 pede 1 MEI; aqui vêm 2 MEI e falta 1 de defesa
-        assert (
-            formacao_fecha_com_as_posicoes("2-1-1", ["GOL", "ZAG", "MEI", "MEI", "ATA"]) is False
-        )
+        assert formacao_fecha_com_as_posicoes("2-1-1", ["GOL", "ZAG", "MEI", "MEI", "ATA"]) is False
 
     def test_setor_a_menos_e_recusado(self) -> None:
         # 3-1 pede 3 de defesa; aqui vem só 2
-        assert (
-            formacao_fecha_com_as_posicoes("3-1", ["GOL", "ZAG", "LAT", "MEI", "ATA"]) is False
-        )
+        assert formacao_fecha_com_as_posicoes("3-1", ["GOL", "ZAG", "LAT", "MEI", "ATA"]) is False
 
 
 class TestArredondarInteiro:
@@ -70,10 +62,16 @@ class TestAplicarEfeitoDeCondicao:
 
 
 def _titular(**sobrescritas: object) -> TitularEmCampo:
-    base = dict(
-        jogador_id=0, nome="", posicao="GOL", condicao="APTO", finalizacao=0, passe=0, drible=0,
-        defesa=0,
-    )
+    base = {
+        "jogador_id": 0,
+        "nome": "",
+        "posicao": "GOL",
+        "condicao": "APTO",
+        "finalizacao": 0,
+        "passe": 0,
+        "drible": 0,
+        "defesa": 0,
+    }
     base.update(sobrescritas)
     return TitularEmCampo(**base)
 
@@ -87,8 +85,12 @@ class TestMontarDuelosECalcularPlacar:
             _titular(jogador_id=30, nome="Rui Prado", posicao="GOL", defesa=77),
             _titular(jogador_id=32, nome="Téo Brandão", posicao="ZAG", defesa=84),
             _titular(
-                jogador_id=31, nome="Davi Lins", posicao="LAT", condicao="MAL_CONDICIONADO",
-                drible=74, defesa=66,
+                jogador_id=31,
+                nome="Davi Lins",
+                posicao="LAT",
+                condicao="MAL_CONDICIONADO",
+                drible=74,
+                defesa=66,
             ),
             _titular(jogador_id=33, nome="Lauro Neves", posicao="MEI", passe=82),
             _titular(jogador_id=34, nome="Otto Rangel", posicao="ATA", finalizacao=75),
@@ -108,8 +110,15 @@ class TestMontarDuelosECalcularPlacar:
 
         assert len(duelos) == 6
         resultado = [
-            (d.ordem, d.clube_atacante_id, d.atacante.nome, d.valor_ataque, d.defensor.nome,
-             d.valor_defesa, d.gol)
+            (
+                d.ordem,
+                d.clube_atacante_id,
+                d.atacante.nome,
+                d.valor_ataque,
+                d.defensor.nome,
+                d.valor_defesa,
+                d.gol,
+            )
             for d in duelos
         ]
         assert resultado == [

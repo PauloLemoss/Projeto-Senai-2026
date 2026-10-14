@@ -132,8 +132,7 @@ class MercadoService:
         custo_total = valor_de_mercado + taxa
         if custo_total > limite_de_compra(clube.caixa):
             raise ConflitoError(
-                f"O custo total ({custo_total}) passa do limite de 50% do caixa "
-                f"({clube.caixa})."
+                f"O custo total ({custo_total}) passa do limite de 50% do caixa ({clube.caixa})."
             )
 
         jogador.clube_id = dados.club_id
@@ -254,9 +253,7 @@ class MercadoService:
             total_received=sum((t.variacao_caixa for t in vendas), Decimal("0.00")),
             total_fees=sum((t.taxa for t in transacoes), Decimal("0.00")),
             total_penalties=sum((t.multa for t in vendas), Decimal("0.00")),
-            total_profit=sum(
-                (t.lucro for t in vendas if t.lucro is not None), Decimal("0.00")
-            ),
+            total_profit=sum((t.lucro for t in vendas if t.lucro is not None), Decimal("0.00")),
         )
 
     def _confirmar_ou_desfazer(self) -> None:

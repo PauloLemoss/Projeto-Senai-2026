@@ -2,24 +2,28 @@ from decimal import Decimal
 
 import pytest
 
-from mercado_jogadores.jogadores.service import DadosCadastroJogador, FiltrosDeListagem, JogadorService
+from mercado_jogadores.jogadores.service import (
+    DadosCadastroJogador,
+    FiltrosDeListagem,
+    JogadorService,
+)
 from tests.conftest import FakeEscalacaoRepository, FakeJogadorRepository, FakeUnidadeDeTrabalho
 
 
 def _dados(nome: str = "Jogador Teste", **sobrescritas: object) -> DadosCadastroJogador:
-    base = dict(
-        nome=nome,
-        posicao="MEI",
-        agilidade=70,
-        idade=25,
-        pace=70,
-        shooting=60,
-        passing=60,
-        dribbling=60,
-        defending=60,
-        physical=60,
-        potential=75,
-    )
+    base = {
+        "nome": nome,
+        "posicao": "MEI",
+        "agilidade": 70,
+        "idade": 25,
+        "pace": 70,
+        "shooting": 60,
+        "passing": 60,
+        "dribbling": 60,
+        "defending": 60,
+        "physical": 60,
+        "potential": 75,
+    }
     base.update(sobrescritas)
     return DadosCadastroJogador(**base)
 
@@ -114,9 +118,7 @@ class TestListagemPaginadaBuscaEFiltros:
         # do valor de mercado ajustado por idade pra confirmar que o filtro usa o calculado.
         cadastrado = service.cadastrar(_dados(idade=20))  # idade <=21 -> +10% no valor de mercado
         valor_base = cadastrado.jogador.valor_base
-        resultado = service.listar(
-            FiltrosDeListagem(min_value=valor_base + Decimal("0.01"))
-        )
+        resultado = service.listar(FiltrosDeListagem(min_value=valor_base + Decimal("0.01")))
         assert len(resultado.itens) == 1
 
     def test_filtro_max_value_usa_o_valor_de_mercado(self, service: JogadorService) -> None:
