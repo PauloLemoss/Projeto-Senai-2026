@@ -230,6 +230,14 @@ class TestCompra:
 
         assert resposta.status_code == 400
 
+    def test_club_id_como_string_e_recusado(self, client: TestClient) -> None:
+        jogador = _cadastrar_jogador_fraco(client)
+        clube = _cadastrar_clube(client)
+
+        resposta = _comprar(client, jogador["id"], str(clube["id"]))
+
+        assert resposta.status_code == 400
+
     def test_loyalty_until_fora_do_formato_e_recusado(self, client: TestClient) -> None:
         jogador = _cadastrar_jogador_fraco(client)
         clube = _cadastrar_clube(client)

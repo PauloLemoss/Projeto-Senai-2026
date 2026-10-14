@@ -16,7 +16,7 @@ from mercado_jogadores.core.datas import (
     formatar_datetime_rn01,
     parsear_datetime_rn01,
 )
-from mercado_jogadores.jogadores.schemas import InteiroDeQuery
+from mercado_jogadores.jogadores.schemas import InteiroDeQuery, InteiroEstrito
 from mercado_jogadores.mercado.models import Transacao
 from mercado_jogadores.mercado.repository import FiltrosDeTransacao
 from mercado_jogadores.mercado.service import (
@@ -35,7 +35,7 @@ class BuyRequest(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    club_id: int = Field(gt=0, le=2_147_483_647)
+    club_id: InteiroEstrito = Field(gt=0, le=2_147_483_647)
     loyalty_until: datetime
 
     @field_validator("loyalty_until", mode="before")

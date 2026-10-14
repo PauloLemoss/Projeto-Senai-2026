@@ -73,8 +73,8 @@ class MatchCreate(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    home_club_id: int = Field(gt=0, le=ID_MAXIMO)
-    away_club_id: int = Field(gt=0, le=ID_MAXIMO)
+    home_club_id: InteiroEstrito = Field(gt=0, le=ID_MAXIMO)
+    away_club_id: InteiroEstrito = Field(gt=0, le=ID_MAXIMO)
 
     def para_dados_de_partida(self) -> DadosDePartida:
         return DadosDePartida(home_club_id=self.home_club_id, away_club_id=self.away_club_id)

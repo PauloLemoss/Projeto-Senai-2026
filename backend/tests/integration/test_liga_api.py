@@ -351,6 +351,17 @@ class TestPartida:
 
         assert resposta.status_code == 404, resposta.text
 
+    def test_home_club_id_como_string_e_recusado(self, client: TestClient) -> None:
+        mandante, _ = _escalar_clube_2_1_1(client, "Águias FC", "AGU")
+        visitante, _ = _escalar_clube_2_1_1(client, "Delta FC", "DEL")
+
+        resposta = client.post(
+            "/api/v1/matches",
+            json={"home_club_id": str(mandante["id"]), "away_club_id": visitante["id"]},
+        )
+
+        assert resposta.status_code == 400, resposta.text
+
     def test_escalacao_incompleta_recusa_a_partida(self, client: TestClient) -> None:
         mandante, jogadores = _escalar_clube_2_1_1(client, "Águias FC", "AGU")
         visitante = _cadastrar_clube(client, name="Delta FC", acronym="DEL")
