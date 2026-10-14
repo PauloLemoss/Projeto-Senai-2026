@@ -9,6 +9,7 @@ from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.core.db import SessionLocal, get_session
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.main import app
+from mercado_jogadores.mercado.models import Contrato, Transacao
 
 
 @pytest.fixture
@@ -17,12 +18,15 @@ def db_session() -> Generator[Session, None, None]:
 
     O repositório comita internamente (salvar/excluir_logicamente), então isolamento por
     rollback não funciona aqui — a limpeza é feita apagando as tabelas ao final do teste.
-    `jogadores` antes de `clubes` porque `jogadores.clube_id` tem FK para `clubes.id`.
+    `contratos`/`transacoes` antes de `jogadores`/`clubes` (FK), e `jogadores` antes de `clubes`
+    pelo mesmo motivo.
     """
     session = SessionLocal()
     try:
         yield session
     finally:
+        session.execute(delete(Contrato))
+        session.execute(delete(Transacao))
         session.execute(delete(Jogador))
         session.execute(delete(Clube))
         session.commit()

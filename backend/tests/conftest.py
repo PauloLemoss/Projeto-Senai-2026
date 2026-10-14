@@ -5,6 +5,8 @@ import pytest
 from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.jogadores.repository import FiltrosSql
+from mercado_jogadores.mercado.models import Contrato, Transacao
+from mercado_jogadores.mercado.repository import FiltrosDeTransacao
 
 
 class FakeJogadorRepository:
@@ -105,3 +107,77 @@ class FakeClubeRepository:
 @pytest.fixture
 def fake_clube_repo() -> FakeClubeRepository:
     return FakeClubeRepository()
+
+
+class FakeContratoRepository:
+    """Implementa o mesmo `Protocol` de `ContratoRepository`, em memória — sem banco."""
+
+    def __init__(self) -> None:
+        self._dados: dict[int, Contrato] = {}
+        self._proximo_id = 1
+
+    def obter_ativo_por_jogador(self, jogador_id: int) -> Contrato | None:
+        for contrato in self._dados.values():
+            if contrato.jogador_id == jogador_id and contrato.situacao == "ATIVO":
+                return contrato
+        return None
+
+    def adicionar(self, contrato: Contrato) -> None:
+        if contrato.id is None:
+            contrato.id = self._proximo_id
+            self._proximo_id += 1
+        self._dados[contrato.id] = contrato
+
+
+@pytest.fixture
+def fake_contrato_repo() -> FakeContratoRepository:
+    return FakeContratoRepository()
+
+
+class FakeTransacaoRepository:
+    """Implementa o mesmo `Protocol` de `TransacaoRepository`, em memória — sem banco."""
+
+    def __init__(self) -> None:
+        self._dados: list[Transacao] = []
+        self._proximo_id = 1
+
+    def adicionar(self, transacao: Transacao) -> None:
+        if transacao.id is None:
+            transacao.id = self._proximo_id
+            self._proximo_id += 1
+        self._dados.append(transacao)
+
+    def existe_venda(self, clube_id: int, jogador_id: int) -> bool:
+        return any(
+            t.clube_id == clube_id and t.jogador_id == jogador_id and t.tipo == "VENDA"
+            for t in self._dados
+        )
+
+    def listar_por_clube(self, clube_id: int, filtros: FiltrosDeTransacao) -> list[Transacao]:
+        resultado = [t for t in self._dados if t.clube_id == clube_id]
+        if filtros.tipos is not None:
+            resultado = [t for t in resultado if t.tipo in filtros.tipos]
+        if filtros.jogador_id is not None:
+            resultado = [t for t in resultado if t.jogador_id == filtros.jogador_id]
+        resultado.sort(key=lambda t: (t.criado_em, t.id), reverse=True)
+        return resultado
+
+
+@pytest.fixture
+def fake_transacao_repo() -> FakeTransacaoRepository:
+    return FakeTransacaoRepository()
+
+
+class FakeUnidadeDeTrabalho:
+    """No-op: os repositórios fake já mutam objetos em memória, sem conceito de transação."""
+
+    def confirmar(self) -> None:
+        pass
+
+    def desfazer(self) -> None:
+        pass
+
+
+@pytest.fixture
+def fake_unidade_de_trabalho() -> FakeUnidadeDeTrabalho:
+    return FakeUnidadeDeTrabalho()
