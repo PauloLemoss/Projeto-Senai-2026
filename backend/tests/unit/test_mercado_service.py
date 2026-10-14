@@ -42,7 +42,7 @@ def _cadastrar_jogador_com_valor_de_mercado(
     }
     dados.update(sobrescritas)
     resultado = JogadorService(
-        fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho()
+        fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho(), FakeClubeRepository()
     ).cadastrar(DadosCadastroJogador(**dados))
     jogador = resultado.jogador
     # APTO + idade 22-31 não altera o valor de mercado (RN02-04): valor_base = valor de mercado.
@@ -526,7 +526,7 @@ class TestVender:
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
         resultado_cadastro = JogadorService(
-            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, fake_clube_repo
         ).cadastrar(
             DadosCadastroJogador(
                 nome="Meia Lua",
@@ -722,7 +722,7 @@ def _comprar_e_vender_exemplo_do_enunciado(
     """Reproduz os exemplos 2.3.1/2.3.2 do enunciado: compra por 37,00 (fee 1,85), depois
     venda por 40,00 (multa 4,00, comissão 0,30, crédito 35,70)."""
     resultado_cadastro = JogadorService(
-        fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho
+        fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, fake_clube_repo
     ).cadastrar(
         DadosCadastroJogador(
             nome="Meia Lua",

@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
+from mercado_jogadores.clubes.repository import SQLAlchemyClubeRepository
 from mercado_jogadores.core.db import get_session
 from mercado_jogadores.core.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 from mercado_jogadores.core.validation import validar_id_da_url
@@ -26,6 +27,7 @@ def get_jogador_service(session: Session = Depends(get_session)) -> JogadorServi
         SQLAlchemyJogadorRepository(session),
         SQLAlchemyEscalacaoRepository(session),
         SQLAlchemyUnidadeDeTrabalho(session),
+        SQLAlchemyClubeRepository(session),
     )
 
 

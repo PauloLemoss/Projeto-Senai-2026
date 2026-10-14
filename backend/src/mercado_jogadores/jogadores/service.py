@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
 
+from mercado_jogadores.clubes.repository import ClubeRepository
 from mercado_jogadores.core.errors import ConflitoError, NaoEncontradoError
 from mercado_jogadores.core.unidade_de_trabalho import UnidadeDeTrabalho
 from mercado_jogadores.core.validation import normalizar_para_busca
@@ -109,10 +110,12 @@ class JogadorService:
         repository: JogadorRepository,
         escalacao_repository: EscalacaoRepository,
         unidade_de_trabalho: UnidadeDeTrabalho,
+        clube_repository: ClubeRepository,
     ) -> None:
         self._repository = repository
         self._escalacoes = escalacao_repository
         self._uot = unidade_de_trabalho
+        self._clubes = clube_repository
 
     def cadastrar(self, dados: DadosCadastroJogador) -> JogadorComCalculados:
         atributos = {
@@ -190,6 +193,9 @@ class JogadorService:
         return self._com_calculados(jogador)
 
     def listar(self, filtros: FiltrosDeListagem) -> ListaDeJogadores:
+        if filtros.club_id is not None and self._clubes.obter(filtros.club_id) is None:
+            raise NaoEncontradoError("Clube não encontrado.")
+
         filtros_sql = FiltrosSql(
             position=filtros.position,
             condition=filtros.condition,

@@ -9,7 +9,12 @@ from mercado_jogadores.jogadores.service import (
     DadosEdicaoJogador,
     JogadorService,
 )
-from tests.conftest import FakeEscalacaoRepository, FakeJogadorRepository, FakeUnidadeDeTrabalho
+from tests.conftest import (
+    FakeClubeRepository,
+    FakeEscalacaoRepository,
+    FakeJogadorRepository,
+    FakeUnidadeDeTrabalho,
+)
 
 
 def _dados_cadastro_validos() -> DadosCadastroJogador:
@@ -35,7 +40,9 @@ class TestCadastrar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
 
         resultado = service.cadastrar(_dados_cadastro_validos())
 
@@ -48,7 +55,9 @@ class TestCadastrar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
 
         resultado = service.cadastrar(_dados_cadastro_validos())
 
@@ -63,7 +72,9 @@ class TestConsultar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
 
         with pytest.raises(NaoEncontradoError):
             service.consultar(999)
@@ -74,7 +85,9 @@ class TestConsultar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
 
         service.alterar_condicao(cadastrado.jogador.id, "MAL_CONDICIONADO")
@@ -91,7 +104,9 @@ class TestEditar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
 
         resultado = service.editar(
@@ -109,7 +124,9 @@ class TestEditar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
         cadastrado.jogador.clube_id = 1  # simula jogador já comprado por um clube
         fake_repo.salvar(cadastrado.jogador)
@@ -126,7 +143,9 @@ class TestEditar:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
 
         with pytest.raises(ConflitoError):
@@ -143,7 +162,9 @@ class TestAlterarCondicao:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
         service.alterar_condicao(cadastrado.jogador.id, "DOENTE")
 
@@ -156,7 +177,9 @@ class TestAlterarCondicao:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
 
         resultado = service.alterar_condicao(cadastrado.jogador.id, "APTO")
@@ -169,7 +192,9 @@ class TestAlterarCondicao:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
         fake_escalacao_repo.substituir_escalacao_do_clube(
             1, [cadastrado.jogador.id], datetime.now()
@@ -187,7 +212,9 @@ class TestExcluir:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
         cadastrado.jogador.clube_id = 1
         fake_repo.salvar(cadastrado.jogador)
@@ -201,7 +228,9 @@ class TestExcluir:
         fake_escalacao_repo: FakeEscalacaoRepository,
         fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
     ) -> None:
-        service = JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+        service = JogadorService(
+            fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, FakeClubeRepository()
+        )
         cadastrado = service.cadastrar(_dados_cadastro_validos())
 
         service.excluir(cadastrado.jogador.id)
@@ -228,7 +257,7 @@ def test_falha_ao_confirmar_doente_aciona_o_rollback_e_propaga_o_erro(
     fake_repo: FakeJogadorRepository, fake_escalacao_repo: FakeEscalacaoRepository
 ) -> None:
     uot_que_falha = _UnidadeDeTrabalhoQueFalhaAoConfirmar()
-    service = JogadorService(fake_repo, fake_escalacao_repo, uot_que_falha)
+    service = JogadorService(fake_repo, fake_escalacao_repo, uot_que_falha, FakeClubeRepository())
     cadastrado = service.cadastrar(_dados_cadastro_validos())
 
     with pytest.raises(RuntimeError):

@@ -132,3 +132,8 @@ class TestValidacaoDeParametros:
     def test_id_com_zero_a_esquerda_e_recusado(self, client: TestClient) -> None:
         resposta = client.get("/api/v1/players?club_id=01")
         assert resposta.status_code == 400
+
+    def test_club_id_inexistente_e_recusado_com_404(self, client: TestClient) -> None:
+        resposta = client.get("/api/v1/players?club_id=999999")
+        assert resposta.status_code == 404
+        assert resposta.json()["message"]

@@ -42,7 +42,7 @@ def _cadastrar_jogador(fake_repo: FakeJogadorRepository, **sobrescritas: object)
     }
     dados.update(sobrescritas)
     resultado = JogadorService(
-        fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho()
+        fake_repo, FakeEscalacaoRepository(), FakeUnidadeDeTrabalho(), FakeClubeRepository()
     ).cadastrar(DadosCadastroJogador(**dados))
     return resultado.jogador
 

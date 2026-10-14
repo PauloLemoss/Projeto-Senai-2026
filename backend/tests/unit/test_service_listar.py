@@ -2,12 +2,19 @@ from decimal import Decimal
 
 import pytest
 
+from mercado_jogadores.clubes.models import Clube
+from mercado_jogadores.core.errors import NaoEncontradoError
 from mercado_jogadores.jogadores.service import (
     DadosCadastroJogador,
     FiltrosDeListagem,
     JogadorService,
 )
-from tests.conftest import FakeEscalacaoRepository, FakeJogadorRepository, FakeUnidadeDeTrabalho
+from tests.conftest import (
+    FakeClubeRepository,
+    FakeEscalacaoRepository,
+    FakeJogadorRepository,
+    FakeUnidadeDeTrabalho,
+)
 
 
 def _dados(nome: str = "Jogador Teste", **sobrescritas: object) -> DadosCadastroJogador:
@@ -33,8 +40,9 @@ def service(
     fake_repo: FakeJogadorRepository,
     fake_escalacao_repo: FakeEscalacaoRepository,
     fake_unidade_de_trabalho: FakeUnidadeDeTrabalho,
+    fake_clube_repo: FakeClubeRepository,
 ) -> JogadorService:
-    return JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho)
+    return JogadorService(fake_repo, fake_escalacao_repo, fake_unidade_de_trabalho, fake_clube_repo)
 
 
 class TestListagemPaginadaBuscaEFiltros:
@@ -178,8 +186,9 @@ class TestOrdenacao:
 
 class TestValidacaoDosParametros:
     def test_so_livres_com_clube_false_e_aceito_e_aplica_os_dois_filtros(
-        self, service: JogadorService
+        self, service: JogadorService, fake_clube_repo: FakeClubeRepository
     ) -> None:
+        fake_clube_repo.salvar(Clube(nome="Águias FC", nome_normalizado="águias fc", sigla="AGU"))
         livre = service.cadastrar(_dados(nome="Jogador Livre"))
         com_clube = service.cadastrar(_dados(nome="Jogador Com Clube"))
         com_clube.jogador.clube_id = 1
@@ -189,3 +198,11 @@ class TestValidacaoDosParametros:
         ids = {item.jogador.id for item in resultado.itens}
         assert com_clube.jogador.id in ids
         assert livre.jogador.id not in ids
+
+    def test_filtro_por_club_id_de_clube_inexistente_e_recusado(
+        self, service: JogadorService
+    ) -> None:
+        service.cadastrar(_dados(nome="Jogador Livre"))
+
+        with pytest.raises(NaoEncontradoError):
+            service.listar(FiltrosDeListagem(club_id=999))
