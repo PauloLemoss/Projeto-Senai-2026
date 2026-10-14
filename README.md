@@ -4,7 +4,8 @@ Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK).
 
 > O frontend ainda não foi implementado (change futura). Este README cobre, por enquanto, só o
 > backend, na parte entregue até aqui: cadastro, consulta, edição, alteração de condição,
-> exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores.
+> exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores; e cadastro,
+> listagem ordenável e consulta (com elenco, valor do elenco e patrimônio) de clubes.
 
 ## Estrutura
 
@@ -93,7 +94,8 @@ backend/
 ├── alembic/              # migrations do banco
 ├── src/mercado_jogadores/
 │   ├── core/             # config, sessão do banco, exceções de domínio, validações comuns
-│   └── jogadores/        # capability "jogadores": models, schemas, service, repository, router
+│   ├── jogadores/        # capability "jogadores": models, schemas, service, repository, router
+│   └── clubes/           # capability "clubes": models, schemas, service, repository, router
 └── tests/
     ├── unit/             # cálculos, schemas e service, sem banco (repositório fake)
     └── integration/      # endpoints HTTP via TestClient, contra o Postgres real
@@ -115,8 +117,17 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
 - **Arquitetura em camadas** (Router → Service → Repository): o service nunca importa
   SQLAlchemy diretamente, só a abstração `JogadorRepository` (um `Protocol`), para poder ser
   testado com um repositório fake, sem banco.
-- **`clube_id` na tabela `jogadores`** ainda não tem chave estrangeira para `clubes.id`: essa
-  tabela nasce numa change futura (capability `clubes`), que vai adicionar a constraint.
+- **`ClubeService` compõe com `JogadorRepository`**, em vez de o `ClubeRepository` fazer um JOIN
+  direto `clubes`/`jogadores`: para montar o elenco e o `squad_value` de um clube, o service
+  reaproveita `jogador_repository.listar(FiltrosSql(club_id=...))`, o mesmo método que a
+  capability `jogadores` já construiu e testou para a listagem (RN07), em vez de duplicar essa
+  busca. O cálculo de `overall` e `market_value` de cada jogador também é reaproveitado (função
+  `calcular_indicadores`, extraída de `JogadorService` para uso dos dois services).
+- **Campo `contract` do elenco ainda não implementado**: a resposta de `GET /clubs/{id}` traz
+  `players` sem o campo `contract` (fim da fidelidade, dias restantes, % de multa), porque
+  depende da tabela `contratos`, que só existe quando a capability `mercado` (compra) for
+  implementada. Até lá, todo clube consultado tem o elenco vazio por construção (não há como um
+  jogador ganhar `club_id` sem a compra), então isso não afeta nenhum cenário testável hoje.
 - **Arredondamento monetário**: `Decimal` com `ROUND_HALF_UP` em todo lugar (nunca `float` nem o
   `round()` nativo do Python, que arredonda "para o par mais próximo" em empates — o enunciado
   exige "para longe do zero").
@@ -139,7 +150,7 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
 ## 7. Funcionalidades não implementadas
 
 - Frontend (React) — ainda não iniciado.
-- Módulos de Clubes, Mercado (compra/venda/histórico) e Liga (escalação/partidas) — ainda não
+- Módulos de Mercado (compra/venda/histórico) e Liga (escalação/partidas) — ainda não
   implementados.
 
 ## 8. Uso de inteligência artificial
