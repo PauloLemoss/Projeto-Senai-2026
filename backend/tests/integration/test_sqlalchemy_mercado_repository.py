@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.core.datas import FUSO_BRASILIA
+from mercado_jogadores.core.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 from mercado_jogadores.jogadores.models import Jogador
 from mercado_jogadores.mercado.models import Contrato, Transacao
 from mercado_jogadores.mercado.repository import (
@@ -12,7 +13,6 @@ from mercado_jogadores.mercado.repository import (
     SQLAlchemyContratoRepository,
     SQLAlchemyTransacaoRepository,
 )
-from mercado_jogadores.mercado.unidade_de_trabalho import SQLAlchemyUnidadeDeTrabalho
 
 _MOMENTO = datetime(2026, 11, 2, 10, 15, tzinfo=FUSO_BRASILIA)
 

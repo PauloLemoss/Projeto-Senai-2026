@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from mercado_jogadores.clubes.models import Clube
 from mercado_jogadores.core.db import SessionLocal, get_session
 from mercado_jogadores.jogadores.models import Jogador
+from mercado_jogadores.liga.models import DueloPartida, Escalacao, Partida
 from mercado_jogadores.main import app
 from mercado_jogadores.mercado.models import Contrato, Transacao
 
@@ -17,14 +18,17 @@ def db_session() -> Generator[Session, None, None]:
     """Sessão real contra o Postgres do docker-compose.
 
     O repositório comita internamente (salvar/excluir_logicamente), então isolamento por
-    rollback não funciona aqui — a limpeza é feita apagando as tabelas ao final do teste.
-    `contratos`/`transacoes` antes de `jogadores`/`clubes` (FK), e `jogadores` antes de `clubes`
-    pelo mesmo motivo.
+    rollback não funciona aqui — a limpeza é feita apagando as tabelas ao final do teste, sempre
+    filhas antes de pais (FK): `duelos_partida` antes de `partidas`; `escalacoes`,
+    `contratos`/`transacoes` antes de `jogadores`/`clubes`; `jogadores` antes de `clubes`.
     """
     session = SessionLocal()
     try:
         yield session
     finally:
+        session.execute(delete(DueloPartida))
+        session.execute(delete(Partida))
+        session.execute(delete(Escalacao))
         session.execute(delete(Contrato))
         session.execute(delete(Transacao))
         session.execute(delete(Jogador))

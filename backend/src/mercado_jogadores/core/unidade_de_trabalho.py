@@ -1,8 +1,9 @@
-"""Unidade de trabalho das operações compostas de mercado (compra, venda) — ver design.md.
+"""Unidade de trabalho das operações compostas (compra, venda, partida, escalação, alteração de
+condição que tira um titular) — ver design.md das changes `mercado` e `liga`.
 
-Compra e venda escrevem em jogador, clube, contrato e transação; o commit (ou rollback, se uma
-regra de negócio falhar no meio) acontece uma única vez, no fim, por esta abstração — o service
-continua dependendo só de um `Protocol`, nunca do SQLAlchemy diretamente (DIP).
+Operações compostas escrevem em mais de uma tabela; o commit (ou rollback, se algo falhar no
+meio) acontece uma única vez, no fim, por esta abstração — o service continua dependendo só de
+um `Protocol`, nunca do SQLAlchemy diretamente (DIP).
 """
 
 from typing import Protocol
