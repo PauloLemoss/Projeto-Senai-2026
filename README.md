@@ -3,10 +3,12 @@
 Estudo de caso SENAI/PE – CÓD. 237 DESENVOLVEDOR I (FULLSTACK).
 
 > O frontend ainda não foi implementado (change futura). Este README cobre, por enquanto, só o
-> backend, na parte entregue até aqui: cadastro, consulta, edição, alteração de condição,
+> backend, que já tem os 4 módulos completos: cadastro, consulta, edição, alteração de condição,
 > exclusão lógica e listagem paginada (com busca, filtros e ordenação) de jogadores; cadastro,
-> listagem ordenável e consulta (com elenco, valor do elenco e patrimônio) de clubes; e compra,
-> venda, histórico de transações e exportação em CSV (mercado).
+> listagem ordenável e consulta (com elenco, valor do elenco e patrimônio) de clubes; compra,
+> venda, histórico de transações e exportação em CSV (mercado); e escalação de titulares,
+> partidas com placar calculado pelos atributos dos jogadores, histórico de partidas e
+> classificação da liga (liga).
 
 ## Estrutura
 
@@ -94,11 +96,15 @@ nada para a aplicação funcionar.
 backend/
 ├── alembic/              # migrations do banco
 ├── src/mercado_jogadores/
-│   ├── core/             # config, sessão do banco, exceções de domínio, validações comuns
+│   ├── core/             # config, sessão do banco, exceções de domínio, validações comuns,
+│   │                     # unidade_de_trabalho (operações atômicas, reaproveitada por
+│   │                     # jogadores/mercado/liga)
 │   ├── jogadores/        # capability "jogadores": models, schemas, service, repository, router
 │   ├── clubes/           # capability "clubes": models, schemas, service, repository, router
-│   └── mercado/          # capability "mercado": models, schemas, service, repository, router,
-│                         # unidade_de_trabalho (compra/venda atômicas) e calculos (RN13/15/16)
+│   ├── mercado/          # capability "mercado": models, schemas, service, repository, router
+│   │                     # e calculos (RN13/15/16)
+│   └── liga/             # capability "liga": models, schemas, service, repository, router e
+│                         # calculos (RN19/20: formação, duelos, placar)
 └── tests/
     ├── unit/             # cálculos, schemas e service, sem banco (repositório fake)
     └── integration/      # endpoints HTTP via TestClient, contra o Postgres real
@@ -161,11 +167,33 @@ Bibliotecas além da stack obrigatória do enunciado, com o motivo de cada uma:
 - **Query params em string**: a validação de `GET /players` não reaproveita o `BeforeValidator`
   usado nos corpos JSON, porque query params chegam sempre como string — os formatos (inteiro
   sem zeros à esquerda, decimal com até 2 casas) são validados por regex própria.
+- **`UnidadeDeTrabalho` mora em `core/`, não em `mercado/`**: ela nasceu em `mercado` (compra e
+  venda), mas a change `liga` precisou do mesmo padrão em `jogadores` (uma mudança de condição
+  para `DOENTE` tira o titular da escalação, na mesma transação) — como `jogadores` é a
+  capability mais antiga e fundamental, importar de `mercado` inverteria a dependência natural
+  entre capabilities. A abstração não tem nenhuma regra de negócio (só `confirmar`/`desfazer`
+  sobre uma `Session`), então subiu para `core/unidade_de_trabalho.py`, no mesmo nível de
+  `core/db.py`, e passou a ser reaproveitada por `jogadores`, `mercado` e `liga`.
+- **"Sai da escalação" é uma regra só, chamada de dois lugares**: em vez de duplicar RN19.5 em
+  `MercadoService.vender` e em `JogadorService.alterar_condicao`, as duas chamam
+  `EscalacaoRepository.remover_titular(jogador_id)` (que só agenda a escrita, nunca comita) antes
+  de confirmar pela própria `UnidadeDeTrabalho` de cada operação — mesmo padrão de composição já
+  usado por `ClubeService`, que depende do `ContratoRepository` de `mercado`.
+- **Efeito de `MAL_CONDICIONADO` na partida arredonda para inteiro, não para 2 casas**: o -15% nos
+  atributos (RN20.3) usa `arredondar_inteiro` (`ROUND_HALF_UP` para 0 casas), uma função própria
+  de `liga/calculos.py`, diferente do `arredondar` de 2 casas usado em todo valor monetário do
+  projeto — são conceitos diferentes (atributo de jogador em partida vs. dinheiro), por isso não
+  reaproveitam a mesma função nem a mesma precisão.
+- **Quem ataca e quem defende em cada duelo é fixo pelo índice do jogador de linha, não pela
+  formação**: a tabela da RN20 (o 4º jogador de linha ataca o goleiro, o 3º ataca o 1º, o 2º ataca
+  o 2º) depende só da posição de cada titular na ordem do elenco (RN11: GOL, ZAG, LAT, MEI, ATA,
+  depois nome, depois id) — nunca da formação escolhida, que só entra na validação da escalação
+  (RN19). Isso evita uma tabela de pareamento por formação, que seria mais uma regra para manter
+  sincronizada sem necessidade.
 
 ## 7. Funcionalidades não implementadas
 
 - Frontend (React) — ainda não iniciado.
-- Módulo de Liga (escalação, partidas, classificação) — ainda não implementado.
 
 ## 8. Uso de inteligência artificial
 
