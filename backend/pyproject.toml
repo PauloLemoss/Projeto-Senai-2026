@@ -5,7 +5,7 @@ description = "API REST do estudo de caso SENAI/PE - mercado de jogadores"
 authors = [
     {name = "charlescadmus",email = "charles.silva@cadmus.com.br"}
 ]
-requires-python = "^3.12"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "fastapi (>=0.143.0,<0.144.0)",
     "uvicorn[standard] (>=0.54.0,<0.55.0)",
@@ -26,6 +26,18 @@ asyncio_mode = "auto"
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+ignore = [
+    # Validators do Pydantic (BeforeValidator) levantam ValueError mesmo para erro de tipo —
+    # é assim que o Pydantic captura e converte em erro de validação (422/400), não TypeError.
+    "TRY004",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# Depends()/Query() como default de parâmetro é o padrão do FastAPI, não um bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -37,5 +49,26 @@ dev = [
     "pytest-asyncio (>=1.4.0,<2.0.0)",
     "httpx (>=0.28.1,<0.29.0)",
     "ruff (>=0.17.0,<0.18.0)",
-    "pytest-cov (>=7.1.0,<8.0.0)"
+    "pytest-cov (>=7.1.0,<8.0.0)",
+    "poethepoet (>=0.37.0,<0.38.0)"
 ]
+
+[tool.poe.tasks]
+install = "poetry install"
+dev = "uvicorn mercado_jogadores.main:app --reload"
+test = "pytest"
+test-cov = "pytest --cov=mercado_jogadores --cov-report=term-missing"
+lint = "ruff check ."
+format = "ruff format ."
+migrate = "alembic upgrade head"
+migrate-reset = ["migrate-down", "migrate"]
+migrate-down = "alembic downgrade base"
+
+[tool.poe.tasks.db-up]
+shell = "cd .. && docker compose up -d db"
+
+[tool.poe.tasks.docker-up]
+shell = "cd .. && docker compose up -d --build"
+
+[tool.poe.tasks.docker-down]
+shell = "cd .. && docker compose down"

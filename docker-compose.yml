@@ -16,5 +16,32 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      # Sobrescreve o DATABASE_URL do backend/.env (pensado pra rodar fora do Docker, contra
+      # localhost:5433): dentro da rede do compose, o Postgres é o serviço "db", na porta
+      # interna 5432 (a POSTGRES_PORT do host não existe dentro da rede).
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-mercado}:${POSTGRES_PASSWORD:-mercado}@db:5432/${POSTGRES_DB:-mercado_jogadores}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn mercado_jogadores.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u,sys; sys.exit(0 if u.urlopen('http://localhost:8000/health', timeout=2).getcode() == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   db_data:
